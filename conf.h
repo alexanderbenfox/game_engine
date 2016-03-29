@@ -6,4 +6,10 @@
 #define TIMESTEP 16.0 //in milliseconds
 #define LAGTIME 0.0  //in nanos
 
+//window parameters
+#define WINDOW_TITLE "Game"
+#define WINDOW_WIDTH 640
+#define WINDOW_HEIGHT 480
+
+
 #endif

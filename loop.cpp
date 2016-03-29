@@ -1,50 +1,31 @@
-#include <chrono>
-#include "conf.h"
-using namespace std::chrono_literals;
+#include "loop.h"
+
+GameLoop::GameLoop()
+{
+  SDL_Init(SDL_INIT_EVERYTHING);
+  this->loop();
+}
+
+GameLoop::~GameLoop()
+{
+
+}
 
 
-// we use a fixed timestep of 1 / (60 fps) = 16 milliseconds
-//constexpr std::chrono::nanoseconds timestep(16ms);
-
-struct game_state {
-  // this contains the state of your game, such as positions and velocities
-};
-
-struct cpu_clock {
-
-  typedef std::chrono::milliseconds ms;
-  typedef std::chrono::nanoseconds ns;
-
-  ms timestep = 16ms;
-  ns lag = 0ns;
-
-  using rep = std::clock_t;
-  using period = std::ratio<1, CLOCKS_PER_SEC>;
-  using duration = std::chrono::duration<rep, period>;
-  using time_point = std::chrono::time_point<cpu_clock, duration>;
-  static const bool is_steady = false;
-
-  static time_point now() noexcept {
-    return time_point{duration{std::clock()}};
-  }
-
-  static std::chrono::nanoseconds toNano(duration t) noexcept {
-    return std::chrono::duration_cast<std::chrono::nanoseconds>(t);
-  }
-
-};
-
-bool handle_events() {
-  // poll for events
+bool GameLoop::handle_events(SDL_Event event) {
+  // poll for events using SDL event calls
+  if(SDL_PollEvent(&event))
+    if(event.type == SDL_QUIT)
+      return true;
 
   return false; // true if the user wants to quit the game
 }
 
-void update(game_state *) {
+void GameLoop::update(game_state *, cpu_clock::ms elapsed_time) {
   // update game logic here
 }
 
-void render(game_state const &) {
+void GameLoop::draw(game_state const &, Graphics graphics) {
   // render stuff here
 }
 
@@ -56,7 +37,11 @@ game_state interpolate(game_state const & current, game_state const & previous, 
   return interpolated_state;
 }
 
-int main() {
+void GameLoop::loop() {
+  //create graphics objects
+  Graphics graphics;
+  SDL_Event event;
+
   cpu_clock clock;
 
   auto previous_time = clock.now();
@@ -70,20 +55,21 @@ int main() {
     previous_time = clock.now();
     clock.lag += clock.toNano(delta_time);
 
-    quit_game = handle_events();
+    quit_game = handle_events(event);
 
     // update game logic as lag permits
     while(clock.lag >= clock.timestep) {
       clock.lag -= clock.timestep;
 
       previous_state = current_state;
-      update(&current_state); // update at a fixed rate each time
+      update(&current_state, clock.timestep); // update at a fixed rate each time
     }
 
     // calculate how close or far we are from the next timestep
     auto alpha = (float) clock.lag.count() / clock.timestep.count();
     auto interpolated_state = interpolate(current_state, previous_state, alpha);
 
-    render(interpolated_state);
+    //draw(interpolated_state, graphics);
   }
+  printf("Done\n");
 }
