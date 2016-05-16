@@ -11,5 +11,7 @@
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 480
 
+//some globals
+#define SPRITE_SCALE 1
 
 #endif
