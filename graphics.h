@@ -15,9 +15,14 @@ public:
   ~Graphics();
 
   /* Load images from sprite sheet into game */
-  SDL_Surface *loadImage(const std::string &spriteSheetFilePath);
+  SDL_Surface* loadImage(const std::string &spriteSheetFilePath);
 
-  void blitSurface(SDL_Rect* srcRect, SDL_Rect* destRect, SDL_Texture *srcTexture);
+  void blitSurface(SDL_Rect* srcRect, SDL_Rect* destRect, SDL_Texture* srcTexture);
+
+  void render();
+  void clear();
+
+  SDL_Renderer* getRenderer() const;
 
 private:
   SDL_Window* _window;

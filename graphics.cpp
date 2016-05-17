@@ -20,3 +20,28 @@ Graphics::~Graphics()
 {
   SDL_DestroyWindow(this->_window);
 }
+
+SDL_Surface* Graphics::loadImage(const std::string &spriteSheetFilePath){
+  //this is going to require downloading SDL_Image
+  if (_spriteSheets.count(spriteSheetFilePath) == 0){
+    _spriteSheets[spriteSheetFilePath] = IMG_Load(spriteSheetFilePath.c_str());
+  }
+
+  return _spriteSheets[spriteSheetFilePath];
+}
+
+void Graphics::blitSurface(SDL_Rect* srcRect, SDL_Rect* destRect, SDL_Texture* srcTexture){
+  SDL_RenderCopy(_renderer, srcTexture, srcRect, destRect);
+}
+
+void Graphics::render(){
+  SDL_RenderPresent(_renderer);
+}
+
+void Graphics::clear(){
+  SDL_RenderClear(_renderer);
+}
+
+SDL_Renderer* Graphics::getRenderer() const{
+  return _renderer;
+}
