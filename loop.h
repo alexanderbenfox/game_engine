@@ -3,12 +3,13 @@
 
 #include "conf.h"
 #include "graphics.h"
+#include "sprite.h"
 
 #ifndef GAMELOOP_H
 #define GAMELOOP_H
 
 
-using namespace std::chrono_literals;
+using namespace std::literals::chrono_literals;
 
 
 // we use a fixed timestep of 1 / (60 fps) = 16 milliseconds
@@ -53,7 +54,8 @@ private:
 	bool handle_events(SDL_Event event);
 	void update(game_state *, cpu_clock::ms elapsed_time);;
 	void draw(game_state const &, Graphics graphics);
-	void loop(); 
+	void loop();
+  Sprite player; 
 };
 
 #endif

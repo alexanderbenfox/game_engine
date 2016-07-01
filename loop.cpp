@@ -1,8 +1,13 @@
 #include "loop.h"
+#include <iostream>
 
 GameLoop::GameLoop()
 {
   SDL_Init(SDL_INIT_EVERYTHING);
+  if(SDL_Init(SDL_INIT_VIDEO) < 0)
+  {
+    printf("SDL could not initialize! SDL error %s\n", SDL_GetError());
+  }
   this->loop();
 }
 
@@ -27,6 +32,9 @@ void GameLoop::update(game_state *, cpu_clock::ms elapsed_time) {
 
 void GameLoop::draw(game_state const &, Graphics graphics) {
   // render stuff here
+  graphics.clear();
+  this->player.draw(graphics, 100, 100);
+  graphics.render();
 }
 
 game_state interpolate(game_state const & current, game_state const & previous, float alpha) {
@@ -38,10 +46,11 @@ game_state interpolate(game_state const & current, game_state const & previous, 
 }
 
 void GameLoop::loop() {
+  std::cerr<<"sanity check";
   //create graphics objects
   Graphics graphics;
-  SDL_Event event;
-
+  SDL_Event event; 
+  this->player = Sprite(graphics, "sprites/01.png", 1,1, 100, 100, 31, 63);
   cpu_clock clock;
 
   auto previous_time = clock.now();
@@ -68,6 +77,10 @@ void GameLoop::loop() {
     // calculate how close or far we are from the next timestep
     auto alpha = (float) clock.lag.count() / clock.timestep.count();
     auto interpolated_state = interpolate(current_state, previous_state, alpha);
+
+    graphics.clear();
+    this->player.draw(graphics, 100, 100);
+    graphics.render();
 
     //draw(interpolated_state, graphics);
   }

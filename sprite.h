@@ -25,11 +25,11 @@ public:
   //const sides::Side getCollisionSide(Rectangle &other) const;
 
   const inline float getX() const
-    {return this->_x:}
-  const inline gloat getY() const
-    {return this->_y;
+    {return this->_x;}
+  const inline float getY() const
+    {return this->_y;}
 
-  Rectangle getCollider();}
+  Rectangle getCollider();
 
   void setColliderX(int value);
   void setColliderY(int value);
@@ -42,7 +42,7 @@ protected:
 
   Rectangle _collider;
 
-  SDL_Rect _sourceCollider;
+  SDL_Rect _sourceRect;
   SDL_Texture* _spriteSheet;
 
 private:
