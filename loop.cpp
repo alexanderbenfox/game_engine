@@ -4,10 +4,10 @@
 GameLoop::GameLoop()
 {
   SDL_Init(SDL_INIT_EVERYTHING);
-  if(SDL_Init(SDL_INIT_VIDEO) < 0)
-  {
-    printf("SDL could not initialize! SDL error %s\n", SDL_GetError());
-  }
+  //if(SDL_Init(SDL_INIT_VIDEO) < 0)
+  //{
+  //  printf("SDL could not initialize! SDL error %s\n", SDL_GetError());
+  //}
   this->loop();
 }
 
@@ -49,6 +49,7 @@ void GameLoop::loop() {
   std::cerr<<"sanity check";
   //create graphics objects
   Graphics graphics;
+  Input input;
   SDL_Event event; 
   this->player = Sprite(graphics, "sprites/01.png", 1,1, 100, 100, 31, 63);
   cpu_clock clock;
@@ -65,6 +66,19 @@ void GameLoop::loop() {
     clock.lag += clock.toNano(delta_time);
 
     quit_game = handle_events(event);
+    
+    float x = 0;
+    float y = 0;
+    const Uint8* keystates = SDL_GetKeyboardState(NULL);
+    if (keystates[SDL_SCANCODE_UP])
+      y -= 2;
+    if (keystates[SDL_SCANCODE_DOWN])
+      y += 2;
+    if (keystates[SDL_SCANCODE_LEFT])
+      x -= 2;
+    if (keystates[SDL_SCANCODE_RIGHT])
+      x += 2;
+    player.moveSprite(x,y);
 
     // update game logic as lag permits
     while(clock.lag >= clock.timestep) {
@@ -79,7 +93,7 @@ void GameLoop::loop() {
     auto interpolated_state = interpolate(current_state, previous_state, alpha);
 
     graphics.clear();
-    this->player.draw(graphics, 100, 100);
+    this->player.draw(graphics, player.getX(), player.getY());
     graphics.render();
 
     //draw(interpolated_state, graphics);

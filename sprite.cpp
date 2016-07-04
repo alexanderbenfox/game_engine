@@ -77,6 +77,11 @@ void Sprite::setColliderWidth(int value){
 void Sprite::setColliderHeight(int value){
   _sourceRect.h = value;
 }
+void Sprite::moveSprite(float x,float y)
+{
+  this->_x += x;
+  this->_y += y;
+}
 
 //sides stuff goes here
 

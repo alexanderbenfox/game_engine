@@ -4,6 +4,7 @@
 #include "conf.h"
 #include "graphics.h"
 #include "sprite.h"
+#include "input.h"
 
 #ifndef GAMELOOP_H
 #define GAMELOOP_H

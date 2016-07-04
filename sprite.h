@@ -35,6 +35,8 @@ public:
   void setColliderY(int value);
   void setColliderWidth(int value);
   void setColliderHeight(int value);
+  
+  void moveSprite(float x, float y);
 
 protected:
 
