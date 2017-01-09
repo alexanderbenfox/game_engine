@@ -18,18 +18,24 @@ public:
   SDL_Surface* loadImage(const std::string &spriteSheetFilePath);
 
   //srcRect is where on sprite sheet we are loading, dest rect is where on screen we're loading
-  void blitSurface(SDL_Rect* srcRect, SDL_Rect* destRect, SDL_Texture* srcTexture);
+  void blitSurface(SDL_Rect* srcRect, SDL_Rect* destRect, SDL_Texture* srcTexture, double angle = 0, const SDL_Point* = NULL,SDL_RendererFlip flip = SDL_FLIP_NONE);
+  void blitSurfaceIgnoreCamera(SDL_Rect* srcRect, SDL_Rect* destRect, SDL_Texture* srcTexture, double angle = 0, const SDL_Point* = NULL,SDL_RendererFlip flip = SDL_FLIP_NONE);
 
   void render();
   void clear();
 
   SDL_Renderer* getRenderer() const;
   SDL_Window* getWindow() const;
+  
+  void setCamera(SDL_Rect* camera);
+  SDL_Rect getCamera();
 
 private:
   SDL_Window* _window;
   SDL_Renderer* _renderer;
 
   std::map <std::string, SDL_Surface*> _spriteSheets;
+  
+  SDL_Rect _camera;
 };
 #endif

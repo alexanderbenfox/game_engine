@@ -15,7 +15,7 @@ Graphics::Graphics()
   //pointer to renderer pointer        SDL_Renderer** renderer)
   //void SDL_SetWindowTitle(SDL_Window* window, const char* title)
   //create window
-  _window = SDL_CreateWindow( "Game", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_SHOWN );
+  _window = SDL_CreateWindow( "Game", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 960, 720, SDL_WINDOW_SHOWN );
   //std::cerr<<SDL_GetWindowSurface(_window);
 
   //Create renderer for window
@@ -65,8 +65,24 @@ SDL_Surface* Graphics::loadImage(const std::string &spriteSheetFilePath){
   return this-> _spriteSheets[spriteSheetFilePath];
 }
 
-void Graphics::blitSurface(SDL_Rect* srcRect, SDL_Rect* destRect, SDL_Texture* srcTexture){
-  SDL_RenderCopy(_renderer, srcTexture, srcRect, destRect);
+void Graphics::blitSurface(SDL_Rect* srcRect, SDL_Rect* destRect, SDL_Texture* srcTexture, double angle, const SDL_Point* point, const SDL_RendererFlip flip){
+  destRect->x -= _camera.x;
+  destRect->y -= _camera.y;
+  //std::cout<<_camera.x<<std::endl;
+  SDL_RenderCopyEx(_renderer, srcTexture, srcRect, destRect, angle, point, flip);
+}
+
+void Graphics::blitSurfaceIgnoreCamera(SDL_Rect* srcRect, SDL_Rect* destRect, SDL_Texture* srcTexture, double angle, const SDL_Point* point, const SDL_RendererFlip flip){
+  SDL_RenderCopyEx(_renderer, srcTexture, srcRect, destRect, angle, point, flip);
+}
+
+void Graphics::setCamera(SDL_Rect *camera){
+  _camera.x = camera->x;
+  _camera.y = camera->y;
+}
+
+SDL_Rect Graphics::getCamera(){
+  return _camera;
 }
 
 void Graphics::render(){

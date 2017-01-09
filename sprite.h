@@ -3,13 +3,20 @@
 
 #include <SDL2/SDL.h>
 #include "conf.h"
+#include <iostream>
 
 #include <string>
+#include <map>
 
 //collision stuff later
 #include "rectangle.h"
 
 class Graphics;
+
+struct SHEET{
+  int width, height;
+  SDL_Texture* sheet;
+};
 
 class Sprite{
 
@@ -28,6 +35,9 @@ public:
     {return this->_x;}
   const inline float getY() const
     {return this->_y;}
+  
+  void setX(float x);
+  void setY(float y);
 
   Rectangle getCollider();
 
@@ -36,16 +46,31 @@ public:
   void setColliderWidth(int value);
   void setColliderHeight(int value);
   
+  void addSpriteSheet(Graphics &graphics, const std::string &filePath, std::string name, int width, int height);
+  
   void moveSprite(float x, float y);
+  const collision_sides::Side getCollisionSide(Rectangle &other) const;
+  
+  float _spriteScale = 1;
+  
+  void setFlipped(bool flipped);
+  void setHUD();
 
 protected:
-
+  
   float _x, _y;
-
+  bool _flipped;
+  
   Rectangle _collider;
 
   SDL_Rect _sourceRect;
   SDL_Texture* _spriteSheet;
+  float _scale = 1;
+  
+  std::map<std::string, SHEET> _spriteSheets;
+  std::string _currentSheet;
+  
+  bool _HUD = false;
 
 private:
 };

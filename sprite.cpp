@@ -1,14 +1,13 @@
 #include "sprite.h"
 #include "graphics.h"
 #include "conf.h"
-#include <iostream>
 #include "SDL2_image/SDL_image.h"
+#include <iostream>
 
 Sprite::Sprite(){}
 
 Sprite::Sprite(Graphics &graphics, const std::string &filePath, int sourceX, int sourceY, int posX, int posY, int width, int height) : _x(posX), _y(posY)
 {
-  std::cerr<<"gets here";
   _sourceRect.x = sourceX;
   _sourceRect.y = sourceY;
   _sourceRect.w = width;
@@ -46,23 +45,73 @@ Uint32 rmask, gmask, bmask, amask;
   _spriteSheet = SDL_CreateTextureFromSurface(graphics.getRenderer(), graphics.loadImage(filePath));
   if (_spriteSheet == NULL) {
     printf("\nError: Unable to load image\n");
-  } 
+  }
+  _spriteSheets["main"].sheet = _spriteSheet;
+  _spriteSheets["main"].width = width;
+  _spriteSheets["main"].height = height;
 }
 
 Sprite::~Sprite() {}
 
+void Sprite::addSpriteSheet(Graphics &graphics, const std::string &filePath, std::string name, int width, int height){
+  _spriteSheets[name].sheet = SDL_CreateTextureFromSurface(graphics.getRenderer(), graphics.loadImage(filePath));
+  _spriteSheets[name].width = width;
+  _spriteSheets[name].height = height;
+}
+
 void Sprite::update(){
-  _collider = Rectangle(_x,_y,_sourceRect.w * SPRITE_SCALE, _sourceRect.h * SPRITE_SCALE);
+  //_collider = Rectangle(_x,_y,_sourceRect.w * SPRITE_SCALE, _sourceRect.h * SPRITE_SCALE);
+  _collider = Rectangle(_x,_y,_sourceRect.w, _sourceRect.h);
 }
 
 void Sprite::draw(Graphics &graphics, int x, int y) {
   SDL_Rect nextRect = {x,y,_sourceRect.w * SPRITE_SCALE, _sourceRect.h * SPRITE_SCALE};
-
-  graphics.blitSurface(&this->_sourceRect, &nextRect, _spriteSheet);
+  nextRect.w = _sourceRect.w * _spriteScale;
+  nextRect.h = _sourceRect.h * _spriteScale;
+  
+  SDL_RendererFlip flip = _flipped ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+  
+  if(_HUD){
+    graphics.blitSurfaceIgnoreCamera(&this->_sourceRect, &nextRect, _spriteSheet, 0,NULL,flip);
+  }
+  else{
+    graphics.blitSurface(&this->_sourceRect, &nextRect, _spriteSheet, 0,NULL,flip);
+  }
 }
 
 Rectangle Sprite::getCollider(){
   return _collider;
+}
+
+const collision_sides::Side Sprite::getCollisionSide(Rectangle &other) const{
+  int overlapRight, overlapLeft, overlapBottom, overlapTop;
+  overlapRight = _collider.getRight() - other.getLeft();
+  overlapLeft = _collider.getLeft() - other.getRight();
+  overlapBottom = _collider.getBottom() - other.getTop();
+  overlapTop = _collider.getTop() - other.getBottom();
+  
+  //get smallest element
+  int overlaps[4] = {abs(overlapRight), abs(overlapLeft), abs(overlapBottom), abs(overlapTop)};
+  int minValue = abs(overlapRight);
+  for(int i = 0; i < 4; i++){
+    if (overlaps[i] < minValue)
+      minValue = overlaps[i];
+  }
+  
+  if (minValue == abs(overlapRight)) return collision_sides::RIGHT;
+  if (minValue == abs(overlapLeft)) return collision_sides::LEFT;
+  if (minValue == abs(overlapBottom)) return collision_sides::BOTTOM;
+  if (minValue == abs(overlapTop)) return collision_sides::TOP;
+  
+  return collision_sides::NONE;
+}
+
+void Sprite::setFlipped(bool flipped){
+  _flipped = flipped;
+}
+
+void Sprite::setHUD(){
+  _HUD = true;
 }
 
 void Sprite::setColliderX(int value){
@@ -81,6 +130,13 @@ void Sprite::moveSprite(float x,float y)
 {
   this->_x += x;
   this->_y += y;
+}
+
+void Sprite::setX(float x){
+  _x = x;
+}
+void Sprite::setY(float y){
+  _y = y;
 }
 
 //sides stuff goes here

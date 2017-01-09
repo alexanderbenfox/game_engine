@@ -32,10 +32,30 @@ public:
 
   const int getWidth() const {return _width;}
   const int getHeight() const {return _height;}
+  
+  void moveAnchor(int x, int y){
+    _x = x;
+    _y = y;
+  }
 
-  //getSide stuff
-  //
-  //
+  const int getSide(const collision_sides::Side side) const{
+    switch (side) {
+      case collision_sides::LEFT :
+        return this->getLeft();
+        break;
+      case collision_sides::RIGHT :
+        return this->getRight();
+        break;
+      case collision_sides::TOP :
+        return this->getTop();
+        break;
+      case collision_sides::BOTTOM :
+        return this->getBottom();
+      default:
+        return collision_sides::NONE;
+        break;
+    }
+  }
 
   const bool collidesWith(const Rectangle &other) const {
     return
