@@ -2,6 +2,8 @@
 #define RECTANGLE_H
 
 #include "conf.h"
+#include <iostream>
+#include <SDL2/SDL.h>
 
 class Graphics;
 
@@ -63,6 +65,29 @@ public:
       getLeft() <= other.getRight() &&
       getBottom() >= other.getTop() &&
       getTop() <= other.getBottom();
+  }
+  
+  const collision_sides::Side getCollisionSide(Rectangle &other) const{
+    int overlapRight, overlapLeft, overlapBottom, overlapTop;
+    overlapRight = this->getRight() - other.getLeft();
+    overlapLeft = this->getLeft() - other.getRight();
+    overlapBottom = this->getBottom() - other.getTop();
+    overlapTop = this->getTop() - other.getBottom();
+    
+    //get smallest element
+    int overlaps[4] = {abs(overlapRight), abs(overlapLeft), abs(overlapBottom), abs(overlapTop)};
+    int minValue = abs(overlapRight);
+    for(int i = 0; i < 4; i++){
+      if (overlaps[i] < minValue)
+        minValue = overlaps[i];
+    }
+    
+    if (minValue == abs(overlapRight)) return collision_sides::RIGHT;
+    if (minValue == abs(overlapLeft)) return collision_sides::LEFT;
+    if (minValue == abs(overlapBottom)) return collision_sides::BOTTOM;
+    if (minValue == abs(overlapTop)) return collision_sides::TOP;
+    
+    return collision_sides::NONE;
   }
 
   const inline Rectangle getRect() const {return *this;}

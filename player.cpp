@@ -1,11 +1,14 @@
 #include "player.h"
 #include "graphics.h"
+#include "enemy.h"
 #include <iostream>
 
 Player::Player() {}
 
 Player::Player(Graphics &graphics, const std::string &filePath, int startX, int startY,float posX, float posY,int height, int width) : AnimatedSprite(graphics,filePath,startX,startY,posX,posY,height,width)
 {
+  aManager = ArrowSprites(graphics);
+  srand(time(NULL));
   _dy = 0;
   
   hud = HUD(graphics);
@@ -20,19 +23,23 @@ Player::Player(Graphics &graphics, const std::string &filePath, int startX, int 
   this->addAnimation(.015, 8, 6, 0, "Walk", 32, 64, Vector2(0,0),"main");
   
   this->addSpriteSheet(graphics, "sprites/shooting-sheet.png", "shooting",64,70);
-  this->addAnimation(.01,7,9,0,"StandingShot",64,70,Vector2(-1,-5),"shooting");
+  this->addAnimation(.007,7,9,0,"StandingShot",64,70,Vector2(-1,-5),"shooting");
   this->addAnimation(.006,3,13,0,"StandingWait",64,70,Vector2(-1,-5),"shooting");
-  this->addAnimation(.0095,7,0,0,"JumpingShot",64,70,Vector2(-1,-8),"shooting");
+  this->addAnimation(.007,7,0,0,"JumpingShot",64,70,Vector2(-1,-8),"shooting");
   
   this->addSpriteSheet(graphics, "sprites/crouching-sheet.png", "crouch",60,60);
   this->addAnimation(1,1,0,0,"Crouch",60,60,Vector2(0,4),"crouch");
-  this->addAnimation(.012,6,1,0,"CrouchShot",60,60,Vector2(0,4),"crouch");
+  this->addAnimation(.01,6,1,0,"CrouchShot",60,60,Vector2(0,4),"crouch");
   
   this->addSpriteSheet(graphics, "sprites/attacking-sheet.png", "attacking",160,128);
-  this->addAnimation(.015,6,0,0,"Attack",160,128,Vector2(-40,-48),"attacking");
-  this->addAnimation(.015,7,6,0,"Attack2",160,128,Vector2(-40,-48),"attacking");
+  this->addAnimation(.012,6,0,0,"Attack",160,128,Vector2(-40,-48),"attacking");
+  this->addAnimation(.012,7,6,0,"Attack2",160,128,Vector2(-40,-48),"attacking");
+  this->addAnimation(.017,8,24,0,"Attack3",160,128,Vector2(-40,-48),"attacking");
   this->addAnimation(.02,6,13,0,"JumpAttack",160,128, Vector2(0,-75),"attacking");
   this->addAnimation(.015,5,19,0,"CrouchAttack",160,128,Vector2(0,28),"attacking");
+  
+  this->addAnimation(.015,1,34,0,"KnockBack",160,128,Vector2(-40,-48),"attacking");
+  this->addAnimation(.02,6,35,0,"Death",160,128,Vector2(-40,-48),"attacking");
   
   this->addSpriteSheet(graphics, "sprites/rollingsheet.png", "roll", 64, 64);
   this->addAnimation(.01,11,1,0,"Dodge",64,64,Vector2(0,0),"roll");
@@ -40,18 +47,33 @@ Player::Player(Graphics &graphics, const std::string &filePath, int startX, int 
   _scale = 2;
   _spriteScale = 2;
   
-  COLLIDER normal = {.width = (int)(30*_scale), .height = (int)(60*_scale), .offset = Vector2(1*_scale,4*_scale)};
+  COLLIDER normal = {.width = (int)(20*_scale), .height = (int)(60*_scale), .offset = Vector2(1*_scale,4*_scale)};
   colliders.push_back(normal);
   cur_collider = normal;
   
   _jumpattack = false;
   _actionTimer = 0;
   
+  _knockBack = false;
+  _invulnerable = false;
+  _dodge = false;
+  _charging = false;
+  _chargeDelay = false;
+  _shoot = false;
+  _bufferShoot = false;
+  
 }
 
 void Player::update(float elapsedTime)
 {
-  AnimatedSprite::update(elapsedTime);
+  AnimatedSprite::update(elapsedTime);  
+  if(_dead){
+    _chargeTime = 0;
+    transparency = 255;
+    this->playAnimation("Death",true);
+    return;
+  }
+  
   float dir = _flipped ? -1 : 1;
   
   bool buffered = _bufferAttack || _bufferDodge || _bufferJump || _bufferShoot;
@@ -59,6 +81,12 @@ void Player::update(float elapsedTime)
   if(_actionTimer <= 0 && buffered)
   {
     resetCurrentAnimation();
+    if (_dx > 0){
+      _flipped = false;
+    }
+    if (_dx < 0){
+      _flipped = true;
+    }
     if(_bufferJump)
       jump();
     if(_bufferAttack)
@@ -71,8 +99,8 @@ void Player::update(float elapsedTime)
 
   
   if(_thisFrameGrounded && _melee && !_shoot){
-    //_jumpattack = true;
-    _actionTimer = 0;
+    _jumpattack = true;
+    _actionTimer = .04;
     _thisFrameGrounded = false;
   }
   
@@ -81,7 +109,62 @@ void Player::update(float elapsedTime)
     _thisFrameGrounded = false;
   }
   
+  if(!_knockBack)
+    setPlayerActions(elapsedTime);
+  else{
+    _dx = _knockBackValue * -dir;
+    _knockBackValue -= 100*elapsedTime;
+    this->playAnimation("KnockBack");
+    _knockBackTimer-=elapsedTime;
+    if(_knockBackTimer <= 0){
+    //if(_grounded){
+      _knockBack = false;
+    }
+  }
+  
+  if(_invulnerable){
+    transparency = 150;
+    _invulnerableTimer -= elapsedTime;
+    if(_invulnerableTimer <= 0){
+      _invulnerable = false;
+    }
+  }
+  else{
+    transparency = 255;
+  }
+  
+  if(_charging){
+    _chargeTime += elapsedTime;
+    if(_chargeTime > .1 && _chargeDelay){
+      sfx.addSFX(CHARGE2, this->getX()-22*_spriteScale, this->getY()-10*_spriteScale);
+      _chargeDelay = false;
+    }
+  }
+  
+  this->setY(this->getY() + _dy*elapsedTime);
+  this->setX(this->getX() + _dx*elapsedTime);
+  sfx.moveSFX(CHARGE2, getX()-_oldX, getY()-_oldY);
+    
+  for(int i = 0; i < arrows.size(); i++){
+    arrows[i].update(elapsedTime);
+    if(arrows[i].done){
+      arrows.erase(arrows.begin() + i);
+    }
+  }
+  
+  _oldX = this->getX();
+  _oldY = this->getY();
+  
+  
+  
+  _collider = Rectangle(this->getX()+cur_collider.offset.x,this->getY()+cur_collider.offset.y,cur_collider.width, cur_collider.height);
+  
+}
+
+void Player::setPlayerActions(float elapsedTime){
+  float dir = _flipped ? -1 : 1;
   if(_actionTimer <= 0){
+    _combo = 2;
     _jumpattack = false;
     if(_dy < 0 && _dx == 0){
       this->playAnimation("StandingJump");
@@ -109,10 +192,10 @@ void Player::update(float elapsedTime)
     }
   }
   else{
-    if(_currentAnimationDone)
+    if(_currentAnimationDone && !_shoot)
       _actionTimer = 0;
     if(_shoot){
-      if(arrowDelay && _actionTimer < .025){
+      if(arrowDelay && _actionTimer < .046){
         createArrow();
       }
       if(_grounded && !_crouched){
@@ -134,16 +217,20 @@ void Player::update(float elapsedTime)
       if(_grounded && !_crouched && !_jumpattack){
         _dx = 0;
         if (_actionTimer > .025)
-          _dx = 500*dir;
+          _dx = 600*dir;
         if (_combo == 0)
           this->playAnimation("Attack", true);
-        else
+        else if (_combo == 1)
           this->playAnimation("Attack2", true);
+        else{
+          if(_actionTimer < .10)
+            _dx = 800*dir;
+          if (_actionTimer < .05 || _actionTimer > .1)
+            _dx = 0;
+          this->playAnimation("Attack3",true);
+        }
       }
       if(!_grounded || _jumpattack){
-        if(_grounded){
-          _dx = 0;
-        }
         this->playAnimation("JumpAttack", true);
       }
       if(_grounded && _crouched){
@@ -155,46 +242,32 @@ void Player::update(float elapsedTime)
       _storedFlipped = (_dx > 0) ? false : true;
       _storedFlipped = (_dx == 0) ? _flipped : _storedFlipped;
       this->playAnimation("Dodge", true);
-      _dx = 1800*dir;
+      _dx = 2000*dir;
     }
     _actionTimer -= elapsedTime;
     if(_actionTimer <= 0)
     {
+      setActionBools();
       _jumpattack = false;
       if(_dodge)
         _flipped = _storedFlipped;
       _wait = false;
     }
   }
-  
-  
-  this->setY(this->getY() + _dy*elapsedTime);
-  this->setX(this->getX() + _dx*elapsedTime);
-    
-  for(int i = 0; i < arrows.size(); i++){
-    arrows[i].update(elapsedTime);
-    if(arrows[i].done){
-      arrows.erase(arrows.begin() + i);
-    }
-  }
-  
-  
-  
-  _collider = Rectangle(this->getX()+cur_collider.offset.x,this->getY()+cur_collider.offset.y,cur_collider.width, cur_collider.height);
-  
+
 }
 
 void Player::updateAttachments(float dt){
   sfx.update(dt);
-  hud.update(dt);
-  if (_actionTimer > 0)
-    hitbox.update(dt, _dx, _dy);
+  hud.update(dt, this);
+  hitbox.update(dt, _dx, _dy, _actionTimer);
 }
 
 void Player::draw(Graphics &graphics)
 {
+  if(_dead)
+    SDL_SetRenderDrawColor(graphics.getRenderer(), 0, 0, 0, 255);
   AnimatedSprite::draw(graphics,this->getX(),this->getY());
-  //SDL_SetRenderDrawColor(graphics.getRenderer(), 255, 0, 0, 255);
   //SDL_RenderDrawLine(graphics.getRenderer(), this->_collider.getLeft(),this->_collider.getTop(),this->_collider.getLeft()+_sourceRect.w,this->_collider.getTop()+_sourceRect.h);
   
   for(int i = 0; i < arrows.size(); i++){
@@ -212,7 +285,7 @@ void Player::moveSprite(float x, float y){
 
 void Player::applyGravity(float dt)
 {
-  _dy += (240);
+  _dy += (GRAVITY*dt);
 }
 
 void Player::dropDown(){
@@ -275,13 +348,13 @@ void Player::shoot(){
     //_currentAnimationDone = false;
     
     if(_grounded && _crouched){
-      _actionTimer = this->getAnimationTime("CrouchShot");
+      _actionTimer = this->getAnimationTime("CrouchShot")+.02;
     }
     else if (_grounded && !_crouched){
-      _actionTimer = this->getAnimationTime("StandingShot");
+      _actionTimer = this->getAnimationTime("StandingShot")+.02;
     }
     else{
-      _actionTimer = this->getAnimationTime("JumpingShot");
+      _actionTimer = this->getAnimationTime("JumpingShot")+.02;
     }
     //_actionTimer = 1.0;
     setActionBools();
@@ -296,6 +369,11 @@ void Player::attack(){
     _bufferAttack = true;
   }
   else{
+    if(_grounded){
+      _combo += 1;
+      if(_combo > 2)
+        _combo = 0;
+    }
     _screenPaused = false;
     _bufferAttack = false;
     _currentAnimationDone = false;
@@ -309,10 +387,14 @@ void Player::attack(){
         _actionTimer = this->getAnimationTime("Attack");
         hitbox.createHitBox(getX(), getY(), STANDING, dir);
       }
-      else
+      else if(_combo == 1)
       {
         _actionTimer = this->getAnimationTime("Attack2");
         hitbox.createHitBox(getX(), getY(), STANDING, dir);
+      }
+      else if (_combo == 2){
+        _actionTimer = this->getAnimationTime("Attack3");
+        hitbox.createHitBox(getX(), getY(),STANDING2, dir);
       }
     }
     else{
@@ -323,7 +405,6 @@ void Player::attack(){
     //_actionTimer = 100.0;
     setActionBools();
     _melee = true;
-    _combo = _combo == 0 ? 1 : 0;
   }
 }
 
@@ -358,11 +439,23 @@ void Player::setCamera(SDL_Rect* screen, Map map){
   
 }
 
+bool Player::handleDoorCollisions(Map &map){
+  bool atDoor = false;
+  std::vector<Door> doors = map.checkDoorCollisions(_collider);
+  for(int i = 0; i<doors.size(); i++){
+    atDoor = true;
+    transitionDoor = doors.at(i);
+  }
+  return atDoor;
+}
+
 void Player::handleCollisions(Map &map){
   for(int i = 0; i < arrows.size(); i++){
     arrows[i].handleCollisions(map);
   }
   hitbox.handleEnemyCollisions(map);
+  
+  bool gotCollision = false;
   
   std::vector<Rectangle> tiles = map.checkTileCollisions(_collider);
   for (Rectangle tile : tiles){
@@ -386,6 +479,7 @@ void Player::handleCollisions(Map &map){
           std::cout<<"TOP"<<std::endl;
           break;
         case(collision_sides::BOTTOM) :
+          gotCollision = true;
           _dy = (_dy > 0) ? 0 : _dy;
           _jumps = 1;
           //std::cout<<"BOTTOM"<<std::endl;
@@ -397,7 +491,8 @@ void Player::handleCollisions(Map &map){
     }
   }
   handleOneWayCollisions(map);
-  handleSlopeCollisions(map);
+  handleSlopeCollisions(map, gotCollision);
+  handleEnemyCollisions(map);
 }
 
 void Player::handleOneWayCollisions(Map &map){
@@ -431,26 +526,78 @@ void Player::handleOneWayCollisions(Map &map){
   }
 }
 
+void Player::handleEnemyCollisions(Map &map){
+  std::vector<Enemy*> enemies = map.checkEnemyCollisions(_collider);
+  for(Enemy* enemy : enemies){
+    if(!_invulnerable && !enemy->isDead() && !enemy->isPlayingDeathAnimation())
+      enemy->collidePlayer(this);
+  }
+  
+  std::vector<Enemy*> hitters = map.checkEnemyHitboxCollisions(_collider);
+  for(Enemy* enemy : hitters){
+    for(EnemyHitbox hb : enemy->hitboxes){
+      if(hb.collidesWith(_collider))
+        if(!_invulnerable)
+          enemy->collidePlayer(this);
+    }
+  }
+}
+
 //void handleSlopeCollisions
 //Handles collisions with ALL slopes the player is colliding with
-void Player::handleSlopeCollisions(Map &map){
+void Player::handleSlopeCollisions(Map &map, bool otherCollision){
   std::vector<Slope> slopes = map.checkSlopeCollisions(_collider);
   for (int i = 0; i < slopes.size(); i++) {
-    std::cout<<slopes.at(i).getSlope()<<std::endl;
     //Calculate where on the slope the player's bottom center is touching
     //and use y=mx+b to figure out the y position to place him at
     //First calculate "b" (slope intercept) using one of the points (b = y - mx)
     int b = (slopes.at(i).getP1().y - (slopes.at(i).getSlope() * std::abs(slopes.at(i).getP1().x)));
     
     //Now get player's center x
-    int centerX = this->_collider.getCenterX();
+    int centerX = this->getX() + this->cur_collider.width/2;
+    
+    int bottom = slopes.at(i).getP1().y > slopes.at(i).getP2().y ? slopes.at(i).getP1().y : slopes.at(i).getP2().y;
+    
+    bool isAbove = (this->getY() + cur_collider.height) < (bottom-8);
+    int ya = (this->getY() + cur_collider.height);
     
     //Now pass that X into the equation y = mx + b (using our newly found b and x) to get the new y position
     int newY = (slopes.at(i).getSlope() * centerX) + b-32;
     
-    //Re-position the player to the correct "y"
-    this->setY(newY - this->_collider.getHeight());
-    this->_grounded = true;
+    float slope = slopes.at(i).getSlope();
+    
+    bool set = false;
+      
+    
+    int bump = 1;
+    int sloper = 3;
+    if(std::abs(slope) < 1){
+      bump = 7;
+      sloper = 1;
+    }
+    
+    newY = newY - this->_collider.getHeight()+bump*SPRITE_SCALE;
+    bool below = (newY)<=(getY()+sloper*SPRITE_SCALE);
+    
+    if(below)
+    {
+      //Re-position the player to the correct "y"
+      if(isAbove && !otherCollision){
+        this->setY(newY);
+        set = true;
+      }
+      if(!isAbove && otherCollision){
+        this->setY(newY);
+        set = true;
+      }
+      if(set){
+        _thisFrameGrounded = !_grounded;
+        this->_grounded = true;
+        _dy = (_dy > 0) ? 0 : _dy;
+        _jumps = 1;
+        _grounded = true;
+      }
+    }
   }
 }
 
@@ -466,16 +613,62 @@ void Player::createArrow(){
   if (_crouched)
     y+=54;
   
-  int x = getX();
+  int x = getX()+10;
   if(_flipped)
-    x = getX() - 32;
-  Arrow arrow(*_graphics, "sprites/arrow.png",1 ,1, x, y, 32, 64, !_flipped);
-  arrows.push_back(arrow);
+    x = getX() - 32-10;
+  if(_chargeTime <= 0.4){
+    Arrow arrow(*_graphics,x, y, !_flipped, aManager);
+    arrows.push_back(arrow);
+  }
+  else{
+    Arrow arrow(*_graphics, x, y, !_flipped,aManager);
+    Arrow arrow2(*_graphics, x, y,!_flipped,aManager, 1000);
+    Arrow arrow3(*_graphics, x, y,!_flipped,aManager, -1000);
+    arrows.push_back(arrow);
+    arrows.push_back(arrow2);
+    arrows.push_back(arrow3);
+    
+  }
+  _chargeTime = 0;
   arrowDelay = false;
 }
 
 void Player::changeHealth(int x){
   _hp += x;
+  if(_hp <= 0){
+    _dead = true;
+  }
+}
+
+void Player::takeDamage(int x){
+  if(!_dodge){
+    changeHealth(-x);
+    
+    //set knock back
+    _dy = -2000.0;
+    
+    _knockBackValue = 1500.0;
+    
+    _knockBack = true;
+    _invulnerable = true;
+    _invulnerableTimer = 0.2;
+    _knockBackTimer = 0.07;
+    
+    setActionBools();
+    _actionTimer = 0;
+    _grounded = false;
+    
+    SDL_Color red = {255,0,0};
+    _graphics->fillScreen(red);
+  }
+}
+
+bool Player::getInvulnerable(){
+  return _invulnerable;
+}
+
+bool Player::getDead(){
+  return _dead;
 }
 
 bool Player::hitRegistered(){
@@ -486,4 +679,12 @@ bool Player::hitRegistered(){
   else return false;
   
   //return hitbox.hitRegistered();
-};
+}
+
+void Player::reset(){
+  if(_dead){
+    _dead = false;
+    _hp = _hpMax;
+    _currentAnimationDone = false;
+  }
+}

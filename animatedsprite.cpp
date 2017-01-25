@@ -76,6 +76,9 @@ void AnimatedSprite::playAnimation(std::string animName, bool once, bool reverse
 void AnimatedSprite::update(float elapsedTime){
   //Sprite::update();
   _timeElapsed+=elapsedTime;
+  if(_animations.size() <= 0)
+    return;
+  
   if(_timeElapsed > _animations[_currentAnimation].timeToUpdate)
   {
     float time = _timeElapsed;
@@ -126,8 +129,8 @@ void AnimatedSprite::draw(Graphics &graphics, int x, int y)
       int sheet_width = currSheet.width;
       destinationRectangle.x = x + (_collider.getWidth() - sheet_width*_spriteScale -_animations[_currentAnimation].offset.x*_spriteScale);
     }
-      
     
+    SDL_SetTextureAlphaMod(_spriteSheet, transparency);
     graphics.blitSurface(&sourceRect, &destinationRectangle,_spriteSheet, 0, NULL,flip);
   }
 }

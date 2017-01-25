@@ -29,10 +29,13 @@ public:
   
   void setCamera(SDL_Rect* camera);
   SDL_Rect getCamera();
+  
+  void fillScreen(SDL_Color color);
 
 private:
   SDL_Window* _window;
   SDL_Renderer* _renderer;
+  SDL_Surface* _surface;
 
   std::map <std::string, SDL_Surface*> _spriteSheets;
   

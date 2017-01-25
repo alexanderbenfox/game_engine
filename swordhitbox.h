@@ -10,7 +10,7 @@
 class SFXManager;
 
 enum HitboxType{
-  STANDING, CROUCHING, JUMPING
+  STANDING,STANDING2, CROUCHING, JUMPING
 };
 
 struct Hitbox{
@@ -20,6 +20,7 @@ struct Hitbox{
   float lifetime = 0.01;
   float delay = 0.05;
   float direction;
+  HitboxType type;
   
   Hitbox(){
     rect = Rectangle(0,0,0,0);
@@ -29,6 +30,7 @@ struct Hitbox{
     direction = dir;
     rect = box;
     isActive = false;
+    type = STANDING;
   }
   
   void moveHitbox(float dx, float dy){
@@ -48,7 +50,7 @@ public:
   void createHitBox(int x, int y, HitboxType type, float direction);
   
   void handleEnemyCollisions(Map &map);
-  void update(float dt, float dx, float dy);
+  void update(float dt, float dx, float dy, float actionTimer);
   void draw(Graphics &graphics);
   
   bool hitRegistered();

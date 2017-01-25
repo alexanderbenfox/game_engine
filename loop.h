@@ -60,9 +60,11 @@ struct cpu_clock {
   //ms timestep = 16ms;
   Uint32 lag = 0;
   
-  int fps = 30;
+  int fps = 60;
   
   int timestep = 1000/fps;
+  
+  float frametime = 0.0075*(30.0/(float)fps);
 
   using rep = std::clock_t;
   using period = std::ratio<1, CLOCKS_PER_SEC>;
@@ -81,6 +83,12 @@ struct cpu_clock {
   
   static float toSeconds(duration t) noexcept {
     return std::chrono::duration_cast<std::chrono::duration<float>>(t).count();
+  }
+  
+  void setFPS(){
+    SDL_DisplayMode mode = {SDL_PIXELFORMAT_UNKNOWN, 0, 0, 0};
+    SDL_GetDisplayMode(0,0,&mode);
+    fps = mode.refresh_rate;
   }
 
 };

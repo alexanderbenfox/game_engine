@@ -22,6 +22,7 @@
 
 class Enemy;
 class Player;
+class EnemyHitbox;
 
 //map contains world information and tile collision information
 class Map{
@@ -38,12 +39,15 @@ public:
   std::vector<Slope> checkSlopeCollisions(const Rectangle &other);
   std::vector<Door> checkDoorCollisions(const Rectangle &other);
   std::vector<Enemy*> checkEnemyCollisions(const Rectangle &other);
+  std::vector<Enemy*> checkEnemyHitboxCollisions(const Rectangle &other);
   
   const Vector2 getPlayerSpawnPoint() const;
+  void setCamera(SDL_Rect *camera);
   
   Vector2 getSize();
   
 protected:
+  SDL_Rect _camera;
   std::string _mapName;
   Vector2 _spawnPoint;
   
@@ -66,6 +70,7 @@ protected:
   std::vector<Rectangle> _onewayrectangles;
   std::vector<Slope> _slopes;
   std::vector<Door> _doors;
+  std::vector<Tile*> _specialTiles;
   
   //NPC Information
   //enemies, npcs, etc. will go here
@@ -97,6 +102,22 @@ protected:
       }
     }
     return overlaps;
+  }
+  
+private:
+  static unsigned int split(const std::string &txt, std::vector<std::string> &strs, char ch) {
+    int pos = txt.find(ch);
+    int initialPos = 0;
+    strs.clear();
+    while (pos != std::string::npos) {
+      strs.push_back(txt.substr(initialPos, pos - initialPos + 1));
+      initialPos = pos + 1;
+      
+      pos = txt.find(ch, initialPos);
+    }
+    strs.push_back(txt.substr(initialPos, std::min<int>(pos, txt.size() - (initialPos + 1))));
+    
+    return strs.size();
   }
 };
 

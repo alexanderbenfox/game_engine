@@ -74,10 +74,13 @@ void Map::loadMap(std::string mapName, Graphics &graphics){
 
 void Map::handleEnemyCollisions(Enemy* enemy){
   Rectangle enemyCol = enemy->getCollider();
+  bool otherCollision = false;
+  
   std::vector<Rectangle> tiles = checkTileCollisions(enemyCol);
   for (Rectangle tile : tiles){
     collision_sides::Side side = enemy->Sprite::getCollisionSide(tile);
     if (side != collision_sides::NONE){
+      otherCollision = true;
       switch(side){
         case(collision_sides::RIGHT) :
           enemy->handleRightCollision(tile);
@@ -94,6 +97,17 @@ void Map::handleEnemyCollisions(Enemy* enemy){
       }
     }
   }
+  
+  std::vector<Slope> slopes = checkSlopeCollisions(enemyCol);
+  enemy->handleSlopeCollisions(slopes, otherCollision);
+  
+}
+
+void Map::setCamera(SDL_Rect *camera){
+  _camera.x = camera->x;
+  _camera.y = camera->y;
+  _camera.w = WINDOW_WIDTH;
+  _camera.h = WINDOW_HEIGHT;
 }
 
 void Map::update(float elapsedTime, Player &player){
@@ -101,10 +115,20 @@ void Map::update(float elapsedTime, Player &player){
     _animTiles.at(i).update(elapsedTime);
   }
   
+  player.touchedMovingPlatform = false;
+  for(int i = 0; i<_specialTiles.size();i++){
+    _specialTiles.at(i)->update(elapsedTime, player);
+    if(_specialTiles.at(i)->getCollider().collidesWith(player.getCollider()))
+      player.touchedMovingPlatform = true;
+  }
+  
   for (int i = 0; i < _enemies.size(); i++){
-    handleEnemyCollisions(_enemies.at(i));
-    _enemies.at(i)->update(elapsedTime, player);
+    if(_enemies.at(i)->isInCameraRange(&_camera)){
+      handleEnemyCollisions(_enemies.at(i));
+      _enemies.at(i)->update(elapsedTime, player);
+    }
     if(_enemies.at(i)->isDead()){
+      delete _enemies.at(i);
       _enemies.erase(_enemies.begin() + i);
     }
   }
@@ -123,13 +147,24 @@ void Map::draw(Graphics &graphics){
     _enemies.at(i)->draw(graphics);
   }
   
-  /*for (Enemy e : _enemies){
-    Rectangle c = e.getCollider();
+  for (Enemy* e : _enemies){
+    Rectangle c = e->getCollider();
+    c.moveAnchor(c.getLeft()-_camera.x, c.getTop() - _camera.y);
     SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getTop(),c.getLeft()+c.getWidth(),c.getTop());
     SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getTop(),c.getLeft(),c.getBottom());
     SDL_RenderDrawLine(graphics.getRenderer(), c.getRight(),c.getTop(),c.getRight(),c.getBottom());
     SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getBottom(),c.getLeft()+c.getWidth(),c.getBottom());
-  }*/
+  }
+  
+  for(int i = 0; i<_specialTiles.size();i++){
+    _specialTiles.at(i)->draw(graphics);
+    Rectangle c = _specialTiles.at(i)->getCollider();
+    c.moveAnchor(c.getLeft()-_camera.x, c.getTop() - _camera.y);
+    SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getTop(),c.getLeft()+c.getWidth(),c.getTop());
+    SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getTop(),c.getLeft(),c.getBottom());
+    SDL_RenderDrawLine(graphics.getRenderer(), c.getRight(),c.getTop(),c.getRight(),c.getBottom());
+    SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getBottom(),c.getLeft()+c.getWidth(),c.getBottom());
+  }
 }
 
 int Map::getElementsFromXML(const char* element, tinyxml2::XMLElement *node){
@@ -357,53 +392,43 @@ void Map::LoadObjects(int *mapNode, Graphics &graphics)
       
       if(strcmp(objName,"slopes") == 0)
       {
-        XMLElement* slope = objectGroup->FirstChildElement("object");
-        while(slope != NULL)
-        {
-          int x = std::ceil(slope->FloatAttribute("x")) * SPRITE_SCALE;
-          int y = std::ceil(slope->FloatAttribute("y")) * SPRITE_SCALE;
-          //int width = std::ceil(slope->FloatAttribute("width")) * SPRITE_SCALE;
-          //int height = std::ceil(slope->FloatAttribute("height")) * SPRITE_SCALE;
-          
-          int width = 32*SPRITE_SCALE;
-          int height = 32 *SPRITE_SCALE;
-          
-          XMLElement* property = slope->FirstChildElement("properties")->FirstChildElement();
-          
-          const char* direction = property->Attribute("value");
-          
-          Vector2 p1 = Vector2(0, 0);
-          Vector2 p2 = Vector2(0, 0);
-          
-          if (strcmp(direction, "RL")) //if slope is rising to the right
-          {
-            int p1_x = x;
-            int p1_y = y+height;
-            int p2_x = x+width;
-            int p2_y = y;
+        XMLElement* pObject = objectGroup->FirstChildElement("object");
+        if (pObject != NULL) {
+          while (pObject) {
+            std::vector<Vector2> points;
+            Vector2 p1;
+            p1 = Vector2(std::ceil(pObject->FloatAttribute("x")), std::ceil(pObject->FloatAttribute("y")));
             
-            p1 = Vector2(p1_x,p1_y);
-            p2 = Vector2(p2_x,p2_y);
-          }
-          else if (strcmp(direction, "LR")) //if slope is rising to the left
-          {
-            int p1_x = x;
-            int p1_y = y;
-            int p2_x = x+width;
-            int p2_y = y+height;
+            XMLElement* pPolyline = pObject->FirstChildElement("polyline");
+            if (pPolyline != NULL) {
+              std::vector<std::string> pairs;
+              const char* pointString = pPolyline->Attribute("points");
+              
+              std::stringstream ss;
+              ss << pointString;
+              split(ss.str(), pairs, ' ');
+              for (int i = 0; i < pairs.size(); i++) {
+                std::vector<std::string> ps;
+                split(pairs.at(i), ps, ',');
+                points.push_back(Vector2(std::stoi(ps.at(0)), std::stoi(ps.at(1))));
+              }
+            }
             
-            p1 = Vector2(p1_x,p1_y);
-            p2 = Vector2(p2_x,p2_y);
+            for (int i = 0; i < points.size(); i += 2) {
+              this->_slopes.push_back(Slope(
+                                            Vector2((p1.x + points.at(i < 2 ? i : i - 1).x) * SPRITE_SCALE,
+                                                    (p1.y + points.at(i < 2 ? i : i - 1).y) * SPRITE_SCALE),
+                                            Vector2((p1.x + points.at(i < 2 ? i + 1 : i).x) * SPRITE_SCALE,
+                                                    (p1.y + points.at(i < 2 ? i + 1 : i).y) * SPRITE_SCALE)
+                                            ));
+            }
+            
+            pObject = pObject->NextSiblingElement("object");
           }
-          
-          _slopes.push_back(Slope(p1,p2));
-          slope = slope->NextSiblingElement("object");
-          
         }
-        
       }
       
-      if(strncmp(objName, "dddoors",5) == 0)
+      if(strcmp(objName, "doors") == 0)
       {
         XMLElement* door = objectGroup->FirstChildElement("object");
         while(door!=NULL)
@@ -414,6 +439,19 @@ void Map::LoadObjects(int *mapNode, Graphics &graphics)
           int height = std::ceil(door->FloatAttribute("height")) * SPRITE_SCALE;
           
           Rectangle doorCol = Rectangle(x, y, width, height);
+          std::string destination_map = door->Attribute("name");
+          
+          XMLElement* properties = door->FirstChildElement("properties")->FirstChildElement("property");
+          int spawnX = std::ceil(properties->FloatAttribute("value"))*SPRITE_SCALE;
+          int spawnY = std::ceil(properties->NextSiblingElement("property")->FloatAttribute("value"))*SPRITE_SCALE;
+          
+          SpawnPoint s = {destination_map, Vector2(spawnX,spawnY)};
+          
+          Door newDoor = Door(doorCol, s);
+          
+          _doors.push_back(newDoor);
+          
+          
           door = objectGroup->NextSiblingElement("object");
           
           
@@ -427,10 +465,50 @@ void Map::LoadObjects(int *mapNode, Graphics &graphics)
         while(spawn != NULL){
           int x = std::ceil(spawn->FloatAttribute("x")) * SPRITE_SCALE;
           int y = std::ceil(spawn->FloatAttribute("y")) * SPRITE_SCALE;
+          
           _spawnPoint = Vector2(x,y);
           spawn = spawn ->NextSiblingElement("object");
         }
         
+      }
+      
+      if(strcmp(objName, "movingplatform") == 0)
+      {
+        XMLElement* platform = objectGroup->FirstChildElement("object");
+        while(platform != NULL){
+          int x = std::ceil(platform->FloatAttribute("x"));
+          int y = std::ceil(platform->FloatAttribute("y"));
+          int width = std::ceil(platform->FloatAttribute("width"));
+          int height = std::ceil(platform->FloatAttribute("height"));
+          
+          int gid = std::ceil(platform->FloatAttribute("gid"));
+          
+          Tileset tls;
+          int closest = 0;
+          
+          
+          for(int i = 0; i < this->_tilesets.size(); i++)
+          {
+            if(_tilesets[i].firstGID <= gid)
+            {
+              if(_tilesets[i].firstGID > closest)
+              {
+                //get tileset with the closest GID
+                closest = _tilesets[i].firstGID;
+                //set used tileset to that tileset
+                tls = _tilesets.at(i);
+              }
+            }
+          }
+          
+          Vector2 tilePosition = Vector2(x,y);
+          Vector2 tilesetPosition = getTilesetPosition(gid-1, _tilesize.x, _tilesize.y, tls.texture);
+          
+          _specialTiles.push_back(new MovingTile(tls.texture, Vector2(width,height), tilesetPosition, tilePosition));
+          
+          
+          platform = platform->NextSiblingElement("object");
+        }
       }
       
       if(strcmp(objName,"enemies") == 0)
@@ -445,6 +523,34 @@ void Map::LoadObjects(int *mapNode, Graphics &graphics)
           if(strcmp(enemyType, "Walker") == 0){
             _enemies.push_back(new Walker(graphics,Vector2(x,y)));
             
+          }
+          if(strcmp(enemyType, "Spitter") == 0){
+            _enemies.push_back(new Spitter(graphics,Vector2(x,y)));
+            
+          }
+          if(strcmp(enemyType, "SmallSpitter") == 0){
+            Enemy* spitter = new SmallSpitter(graphics,Vector2(x,y));
+            if(enemy->FirstChildElement("properties") != NULL){
+              XMLElement* prop = enemy->FirstChildElement("properties")->FirstChildElement("property");
+              const char* type = prop->Attribute("value");
+              
+              if(strcmp(type, "Stationary") == 0)
+                spitter->setStationary();
+            }
+            
+            _enemies.push_back(spitter);
+          }
+          if(strcmp(enemyType, "Floater") == 0){
+            _enemies.push_back(new Floater(graphics,Vector2(x,y)));
+          }
+          
+          if(strcmp(enemyType, "SwordMan") == 0){
+            _enemies.push_back(new SwordMan(graphics, Vector2(x,y)));
+          }
+          
+          
+          if(strcmp(enemyType, "SmallMage") == 0){
+            _enemies.push_back(new SmallMage(graphics, Vector2(x,y)));
           }
           
           enemy = enemy->NextSiblingElement("object");
@@ -510,6 +616,18 @@ std::vector<Slope> Map::checkSlopeCollisions(const Rectangle &other){
 
 std::vector<Door> Map::checkDoorCollisions(const Rectangle &other){
   return overlapRectangles(other, _doors);
+}
+
+std::vector<Enemy*> Map::checkEnemyHitboxCollisions(const Rectangle &other){
+  std::vector<Enemy*> overlaps;
+  for(int i = 0; i< _enemies.size(); i++)
+  {
+    for(int j = 0; j < _enemies.at(i)->hitboxes.size(); j++){
+      if(_enemies.at(i)->hitboxes.at(j).collidesWith(other))
+        overlaps.push_back(_enemies.at(i));
+    }
+  }
+  return overlaps;
 }
 
 std::vector<Enemy*> Map::checkEnemyCollisions(const Rectangle &other){

@@ -79,6 +79,16 @@ void Sprite::draw(Graphics &graphics, int x, int y) {
   }
 }
 
+void Sprite::drawBar(Graphics &graphics, int x, int y, int max, int current){
+  SDL_Rect nextRect = {x,y,_sourceRect.w * SPRITE_SCALE, _sourceRect.h * SPRITE_SCALE};
+  nextRect.w = (float)(_sourceRect.w * _spriteScale)*((float)current/(float)max);
+  nextRect.h = (float)(_sourceRect.h * _spriteScale);
+  
+  SDL_RendererFlip flip = _flipped ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+  
+  graphics.blitSurfaceIgnoreCamera(&this->_sourceRect, &nextRect, _spriteSheet, 0,NULL,flip);
+}
+
 Rectangle Sprite::getCollider(){
   return _collider;
 }

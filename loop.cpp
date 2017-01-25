@@ -156,16 +156,21 @@ void GameLoop::loop() {
   Graphics graphics;
   Input input;
   SDL_Event event;
+  SDL_Rect camera;
   this->map = Map("Map 1",graphics);
   Vector2 spawnPoint = map.getPlayerSpawnPoint();
   this->player = Player(graphics, "sprites/playerspritesheett.png",1 ,1, spawnPoint.x-32, spawnPoint.y - 60, 64, 32);
   player.playAnimation("Idle");
-  SDL_Rect camera;
   int pauseTime = 0;
   
   //graphics.setCamera(&player.camera.screen);
   
   cpu_clock clock;
+  clock.setFPS();
+  
+  float frames = 0;
+  float startTime = SDL_GetTicks();
+  int drops = 0;
 
   auto previous_time = clock.now();
   bool quit_game = false;
@@ -174,6 +179,10 @@ void GameLoop::loop() {
   game_state previous_state;
 
   while(!quit_game) {
+    if(frames == 0){
+      startTime = SDL_GetTicks();
+    }
+    frames++;
     fps.start();
     input.beginNewFrame();
     if (SDL_PollEvent(&event)) {
@@ -219,7 +228,13 @@ void GameLoop::loop() {
     {
       x += 1000.0;
     }
-    if (input.keyWasPressed(SDL_SCANCODE_D))
+    if(input.keyIsHeld(SDL_SCANCODE_D)){
+      player.chargeShot();
+    }
+    else{
+      player.stopCharging();
+    }
+    if (input.keyWasReleased(SDL_SCANCODE_D))
     {
       player.shoot();
     }
@@ -233,6 +248,10 @@ void GameLoop::loop() {
       player.dodge();
     }
     
+    if(input.keyWasPressed(SDL_SCANCODE_RETURN)){
+      player.reset();
+    }
+    
     //std::cout<<dt<<std::endl;
     //float nothing = approach(x,player._dx,dt*10);
     
@@ -244,23 +263,38 @@ void GameLoop::loop() {
     while(clock.lag >= clock.timestep) {
       //dt = clock.toSeconds(clock.timestep);
       clock.lag -= clock.timestep;
-      std::cout<<"STUCK"<<std::endl;
       
-      if (player.hitRegistered())
-        pauseTime = 7;
-      
-      if (player.hitRegistered() || pauseTime > 0){
-        pauseTime -= (1);
+      if(!player.getDead()){
+        
+        if (player.hitRegistered())
+          pauseTime = 6*(clock.fps/30);
+        
+        if (player.hitRegistered() || pauseTime > 0){
+          pauseTime -= (1);
+        }
+        else{
+          player.update(clock.frametime);
+          player.applyGravity(clock.frametime);
+          player.handleCollisions(map);
+          player.setCamera(&camera,map);
+          
+          //transition to another room
+          if (player.handleDoorCollisions(map) && input.keyWasPressed(SDL_SCANCODE_UP)){
+            Door newRoom = player.getNewRoom();
+            this->map = Map(newRoom.getDestination(),graphics);
+            player.setX(newRoom.getSpawn().x);
+            player.setY(newRoom.getSpawn().y);
+          }
+        }
+        
+        
+        map.setCamera(&camera);
+        map.update(clock.frametime, player);
+        player.updateAttachments(clock.frametime);
       }
       else{
-        player.update(0.0071667);
-        player.applyGravity(0.0071667);
-        player.handleCollisions(map);
-        player.setCamera(&camera,map);
+        player.update(clock.frametime);
       }
-      
-      map.update(0.0071667, player);
-      player.updateAttachments(0.0071667);
       
 
       //previous_state = current_state;
@@ -273,16 +307,32 @@ void GameLoop::loop() {
     //auto interpolated_state = interpolate(current_state, previous_state, alpha);
 
     graphics.clear();
-    this->map.draw(graphics);
+    
+    if(!player.getDead())
+      this->map.draw(graphics);
     this->player.draw(graphics);
+    
     graphics.setCamera(&camera);
     graphics.render();
     
     //Cap the frame rate
-    if( fps.get_ticks() < clock.timestep )
+    if( fps.get_ticks() < clock.timestep)
     {
+      float otherthing = fps.get_ticks();
+      float thing = clock.timestep - fps.get_ticks();
       SDL_Delay( ( clock.timestep ) - fps.get_ticks() );
-      std::cout<<"ITGETSHERE"<<std::endl;
+    }
+    
+    if(frames == 1){
+      float f = (1000*frames)/((SDL_GetTicks()-startTime));
+      std::cout<<"FPS:"<<f<<std::endl;
+      frames = 0;
+      if(f < 50){
+        drops++;
+        
+        std::cout<<"yo"<<std::endl;
+        std::cout<<drops<<std::endl;
+      }
     }
     
 

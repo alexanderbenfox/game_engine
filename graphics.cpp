@@ -17,6 +17,8 @@ Graphics::Graphics()
   //create window
   _window = SDL_CreateWindow( "Game", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 960, 720, SDL_WINDOW_SHOWN );
   //std::cerr<<SDL_GetWindowSurface(_window);
+  
+  //_surface = SDL_GetWindowSurface(_window);
 
   //Create renderer for window
   _renderer = SDL_CreateRenderer( _window, -1, SDL_RENDERER_ACCELERATED );
@@ -74,6 +76,12 @@ void Graphics::blitSurface(SDL_Rect* srcRect, SDL_Rect* destRect, SDL_Texture* s
 
 void Graphics::blitSurfaceIgnoreCamera(SDL_Rect* srcRect, SDL_Rect* destRect, SDL_Texture* srcTexture, double angle, const SDL_Point* point, const SDL_RendererFlip flip){
   SDL_RenderCopyEx(_renderer, srcTexture, srcRect, destRect, angle, point, flip);
+}
+
+void Graphics::fillScreen(SDL_Color color){
+  SDL_SetRenderDrawColor(_renderer, color.r, color.g, color.b, color.a);
+  SDL_RenderClear(_renderer);
+  SDL_RenderPresent(_renderer);
 }
 
 void Graphics::setCamera(SDL_Rect *camera){

@@ -12,17 +12,9 @@ public:
   {
     this->_p1 = p1;
     this->_p2 = p2;
-    this->_slope = calcSlope(p1,p2);
-  }
-
-  const inline float calcSlope(Vector2 p1, Vector2 p2) const
-  {
-    float y = std::fabs(p2.y) - std::fabs(p1.y);
-    float x = std::fabs(p2.x) - std::fabs(p1.x);
-    if( (p2.x - p1.x) != 0)
-      return y/x;
-    else 
-      return 0;
+    if (this->_p2.x - this->_p1.x != 0) {
+      this->_slope = (fabs(this->_p2.y) - fabs(this->_p1.y)) / (fabs(this->_p2.x) - fabs(this->_p1.x));
+    }
   }
 
   const inline float getSlope() const

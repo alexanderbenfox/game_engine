@@ -40,6 +40,16 @@ public:
   void draw(Graphics &graphics, int x, int y);
   std::string _currentAnimation;
   float getAnimationTime(std::string name);
+  
+  void setVisible(bool visibile);
+  
+  void setXPlease(float x){
+    _x = x;
+  }
+  
+  void setYPlease(float y){
+    _y = y;
+  }
 
 protected:
   bool _currentAnimationOnce;
@@ -53,8 +63,6 @@ protected:
   void resetCurrentAnimation();
 
   void stopAnimation();
-
-  void setVisible(bool visibile);
 
   //virtual void setupAnimations() = 0;
   

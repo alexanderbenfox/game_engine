@@ -39,6 +39,7 @@ struct Vector2{
 
 //some globals
 #define SPRITE_SCALE 2
+#define GRAVITY 35000
 
 #endif
 

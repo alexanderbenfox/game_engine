@@ -27,6 +27,7 @@ public:
 
   virtual void update();
   void draw(Graphics &graphics, int x, int y);
+  void drawBar(Graphics &graphics, int x, int y, int max, int current);
 
   //const Rectangle getBoundingBox() const;
   //const sides::Side getCollisionSide(Rectangle &other) const;
@@ -52,6 +53,7 @@ public:
   const collision_sides::Side getCollisionSide(Rectangle &other) const;
   
   float _spriteScale = 1;
+  Uint8 transparency = 255;
   
   void setFlipped(bool flipped);
   void setHUD();
