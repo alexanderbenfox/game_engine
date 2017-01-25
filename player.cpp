@@ -7,7 +7,6 @@ Player::Player() {}
 
 Player::Player(Graphics &graphics, const std::string &filePath, int startX, int startY,float posX, float posY,int height, int width) : AnimatedSprite(graphics,filePath,startX,startY,posX,posY,height,width)
 {
-  aManager = ArrowSprites(graphics);
   srand(time(NULL));
   _dy = 0;
   
@@ -617,13 +616,13 @@ void Player::createArrow(){
   if(_flipped)
     x = getX() - 32-10;
   if(_chargeTime <= 0.4){
-    Arrow arrow(*_graphics,x, y, !_flipped, aManager);
+    Arrow arrow(*_graphics, "sprites/arrow.png",1 ,1, x, y, 32, 64, !_flipped);
     arrows.push_back(arrow);
   }
   else{
-    Arrow arrow(*_graphics, x, y, !_flipped,aManager);
-    Arrow arrow2(*_graphics, x, y,!_flipped,aManager, 1000);
-    Arrow arrow3(*_graphics, x, y,!_flipped,aManager, -1000);
+    Arrow arrow(*_graphics, "sprites/arrow.png",1 ,1, x, y, 32, 64, !_flipped);
+    Arrow arrow2(*_graphics, "sprites/arrow.png",1 ,1, x, y, 32, 64, !_flipped, 1000.0);
+    Arrow arrow3(*_graphics, "sprites/arrow.png",1 ,1, x, y, 32, 64, !_flipped,-1000.0);
     arrows.push_back(arrow);
     arrows.push_back(arrow2);
     arrows.push_back(arrow3);

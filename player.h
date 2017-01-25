@@ -89,8 +89,6 @@ public:
   }
   
 private:
-  ArrowSprites aManager;
-  
   std::vector<COLLIDER> colliders;
   COLLIDER cur_collider;
   

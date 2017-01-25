@@ -4,7 +4,7 @@
 SFXManager::SFXManager(){}
 
 SFXManager::SFXManager(Graphics &graphics, bool arrow){
-  /*if (!arrow){
+  if (!arrow){
     SFX_SPRITES dust(&graphics, 0.03, 3, 24, 0.05);
     SFX_SPRITES arrow_exp(&graphics, 0.01, 5, 27, 0.05);
     SFX_SPRITES splat(&graphics, 0.01, 6, 32, 0.06);
@@ -34,9 +34,7 @@ SFXManager::SFXManager(Graphics &graphics, bool arrow){
     _baseSprites[splatter] = splat;
     _baseSprites[arrow_blast] = arrow_exp;
     
-  }*/
-  _sfx = SFXSpriteLoader::getSFX(graphics);
-  _baseSprites = SFXSpriteLoader::getSprites(graphics);
+  }
   
 }
 

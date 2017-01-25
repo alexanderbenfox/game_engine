@@ -42,19 +42,31 @@ Uint32 rmask, gmask, bmask, amask;
   //SDL_Surface *optSurface = SDL_ConvertSurface(surface, SDL_GetWindowSurface(graphics.getWindow())->format, NULL);
   //graphics.loadImage(filePath);
   SDL_Surface *theWindow = SDL_GetWindowSurface(graphics.getWindow());
-  _spriteSheet = SDL_CreateTextureFromSurface(graphics.getRenderer(), graphics.loadImage(filePath));
+  if(SpriteLoader::spriteLoaded(filePath)){
+    _spriteSheet = SpriteLoader::getTexture(filePath);
+  }else{
+    SpriteLoader::addTexture(filePath, SDL_CreateTextureFromSurface(graphics.getRenderer(), graphics.loadImage(filePath)));
+    _spriteSheet = SpriteLoader::getTexture(filePath);
+  }
   if (_spriteSheet == NULL) {
     printf("\nError: Unable to load image\n");
   }
-  _spriteSheets["main"].sheet = _spriteSheet;
-  _spriteSheets["main"].width = width;
-  _spriteSheets["main"].height = height;
+  
+  this->addSpriteSheet(graphics, filePath, "main", width, height);
+  _spriteSheet = _spriteSheets["main"].sheet;
 }
 
 Sprite::~Sprite() {}
 
 void Sprite::addSpriteSheet(Graphics &graphics, const std::string &filePath, std::string name, int width, int height){
-  _spriteSheets[name].sheet = SDL_CreateTextureFromSurface(graphics.getRenderer(), graphics.loadImage(filePath));
+  if(SpriteLoader::spriteLoaded(filePath)){
+    _spriteSheets[name].sheet = SpriteLoader::getTexture(filePath);
+  }
+  else{
+    SpriteLoader::addTexture(filePath, SDL_CreateTextureFromSurface(graphics.getRenderer(), graphics.loadImage(filePath)));
+    _spriteSheets[name].sheet = SpriteLoader::getTexture(filePath);
+    
+  }
   _spriteSheets[name].width = width;
   _spriteSheets[name].height = height;
 }

@@ -21,17 +21,12 @@ struct SFX_SPRITES{
     height = 64;
     width = 64;
     
-    _sprite = new AnimatedSprite(*graphics, filePath, startX, startY, -1000, -1000, height, width);
-    _sprite->addAnimation(_frameTime, _numberOfFrames, _startFrame, 0, "Animation", width, height, Vector2(0,0),"main");
-    _sprite->playAnimation("Animation");
-    
     frameTime = _frameTime;
     numberOfFrames = _numberOfFrames;
     startFrame = _startFrame;
     lifetime = life;
     _type = type;
   }
-  AnimatedSprite *_sprite;
   
   Graphics *_graphics;
   std::string filePath;
@@ -48,7 +43,7 @@ struct SFX_SPRITES{
 struct SFX{
   float _x,_y;
   float _lifetime;
-  AnimatedSprite *_sprite;
+  AnimatedSprite _sprite;
   bool _done;
   SFX_TYPES type;
   
@@ -56,14 +51,16 @@ struct SFX{
     _x = x;
     _y = y;
     _lifetime = setupSprite.lifetime;
-    _sprite = setupSprite._sprite;
-    _sprite->_spriteScale = 2;
+    _sprite = AnimatedSprite(*setupSprite._graphics, setupSprite.filePath, setupSprite.startX, setupSprite.startY, x, y, setupSprite.height, setupSprite.width);
+    _sprite.addAnimation(setupSprite.frameTime, setupSprite.numberOfFrames, setupSprite.startFrame, 0, "Animation", setupSprite.width, setupSprite.height, Vector2(0,0),"main");
+    _sprite.playAnimation("Animation");
+    _sprite._spriteScale = 2;
     type = setupSprite._type;
   }
   
   void update(float dt){
     _lifetime -= dt;
-    _sprite->update(dt);
+    _sprite.update(dt);
     
     if(_lifetime <= 0){
       _done = true;
@@ -80,20 +77,20 @@ struct SFX{
   }
   
   void setFlipped(bool flipped){
-    _sprite->setFlipped(flipped);
+    _sprite.setFlipped(flipped);
   }
   
   void setScale(int scale){
-    _sprite->_spriteScale = scale;
+    _sprite._spriteScale = scale;
   }
   
   void draw(Graphics &graphics){
     if(!_done)
-      _sprite->draw(graphics, _x, _y);
+      _sprite.draw(graphics, _x, _y);
   }
 };
 
-class SFXSpriteLoader{
+/*class SFXSpriteLoader{
 public:
   static SFXSpriteLoader* getInstance(Graphics &graphics){
     static SFXSpriteLoader instance(graphics);
@@ -142,7 +139,7 @@ private:
   
   std::vector<SFX> _sfx;
   std::map<SFX_TYPES , SFX_SPRITES> _baseSprites;
-};
+};*/
 
 
 

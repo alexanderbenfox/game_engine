@@ -18,6 +18,39 @@ struct SHEET{
   SDL_Texture* sheet;
 };
 
+class SpriteLoader{
+public:
+  static SpriteLoader* getInstance(){
+    static SpriteLoader instance;
+    return &instance;
+  }
+  
+  static SDL_Texture* getTexture(std::string filePath){
+    if(getInstance()->spriteLoaded(filePath)){
+      return getInstance()->_textures[filePath];
+    }
+    else return NULL;
+  }
+  
+  static std::map<std::string, SDL_Texture*> Textures(){
+    return getInstance()->_textures;
+  }
+  
+  static bool spriteLoaded(std::string filePath){
+    return (getInstance()->_textures.count(filePath) != 0);
+  }
+  
+  static void addTexture(std::string filePath, SDL_Texture* texture){
+    getInstance()->_textures[filePath] = texture;
+  }
+  
+  SpriteLoader(SpriteLoader const&) = delete;
+  void operator=(SpriteLoader const&) = delete;
+private:
+  SpriteLoader(){}
+  std::map<std::string,SDL_Texture*> _textures;
+};
+
 class Sprite{
 
 public:
