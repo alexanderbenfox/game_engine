@@ -12,11 +12,11 @@ void SwordHitbox::createHitBox(int x, int y, HitboxType type, float direction){
   switch(type){
     case STANDING:{
       if(direction >= 0){
-        Rectangle temp = Rectangle(x+64,y,80+16,52);
+        Rectangle temp = Rectangle(x+64,y,80+32,52);
         _currentHitbox = Hitbox(temp, direction);
       }
       else{
-        Rectangle temp = Rectangle(x-(80+16),y,80+16,52);
+        Rectangle temp = Rectangle(x-(80+32),y,80+32,52);
         _currentHitbox = Hitbox(temp, direction);
       }
       _currentHitbox.setDelay(0.05);
@@ -24,11 +24,11 @@ void SwordHitbox::createHitBox(int x, int y, HitboxType type, float direction){
     }
     case STANDING2:{
       if(direction >= 0){
-        Rectangle temp = Rectangle(x+64,y,80+16,80);
+        Rectangle temp = Rectangle(x+64,y,80+32,80);
         _currentHitbox = Hitbox(temp, direction);
       }
       else{
-        Rectangle temp = Rectangle(x-(80+16),y,80+16,80);
+        Rectangle temp = Rectangle(x-(80+32),y,80+32,80);
         _currentHitbox = Hitbox(temp, direction);
       }
       _currentHitbox.setDelay(0.08);
@@ -49,11 +49,11 @@ void SwordHitbox::createHitBox(int x, int y, HitboxType type, float direction){
     }
     case JUMPING:{
       if(direction >= 0){
-        Rectangle temp = Rectangle(x+32,y-40,80+32,96+8);
+        Rectangle temp = Rectangle(x+32,y-40,80+32,96+32);
         _currentHitbox = Hitbox(temp, direction);
       }
       else{
-        Rectangle temp = Rectangle(x-80,y-40,80+32,96+8);
+        Rectangle temp = Rectangle(x-80,y-40,80+32,96+32);
         _currentHitbox = Hitbox(temp, direction);
       }
       _currentHitbox.setDelay(0.04);
@@ -87,21 +87,23 @@ void SwordHitbox::update(float dt, float dx, float dy, float actionTimer){
 
 void SwordHitbox::draw(Graphics &graphics){
   _sfx.draw(graphics);
-  if(_currentHitbox.isActive){
+  /*if(_currentHitbox.isActive){
     SDL_Rect camera = graphics.getCamera();
     Rectangle c = Rectangle(_currentHitbox.rect.getLeft()-camera.x, _currentHitbox.rect.getTop()-camera.y,_currentHitbox.rect.getWidth(), _currentHitbox.rect.getHeight());
     SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getTop(),c.getLeft()+c.getWidth(),c.getTop());
     SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getTop(),c.getLeft(),c.getBottom());
     SDL_RenderDrawLine(graphics.getRenderer(), c.getRight(),c.getTop(),c.getRight(),c.getBottom());
     SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getBottom(),c.getLeft()+c.getWidth(),c.getBottom());
-  }
+  }*/
 }
 
 void SwordHitbox::handleEnemyCollisions(Map &map){
+  float hitBoxStart = _currentHitbox.direction == 1 ? _currentHitbox.rect.getLeft() : _currentHitbox.rect.getRight();
   if(_currentHitbox.isActive){
     std::vector<Enemy*> enemies = map.checkEnemyCollisions(_currentHitbox.rect);
     for(Enemy* enemy : enemies){
-      if (!enemy->isPlayingDeathAnimation()){
+      bool isDamagable = enemy->IsDamagable(hitBoxStart);
+      if (!enemy->isPlayingDeathAnimation() && isDamagable){
         bool strong = (_currentHitbox.type == STANDING2);
         enemy->changeHealth(-3);
         if(strong)
@@ -118,6 +120,8 @@ void SwordHitbox::handleEnemyCollisions(Map &map){
           _sfx.addSFX(type, enemy->getCollider().getCenterX()-64 - 10, _currentHitbox.rect.getCenterY()-64, true);
         else
           _sfx.addSFX(type, enemy->getCollider().getCenterX()-64 + 10, _currentHitbox.rect.getCenterY()-64, false);
+      }
+      if(!isDamagable){
       }
     }
   }

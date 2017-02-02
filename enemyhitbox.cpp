@@ -10,15 +10,19 @@ EnemyHitbox::EnemyHitbox(Graphics &graphics, const std::string &filePath, int st
   
   length = animLength;
   
+  _noSprite = true;
   
-  if (!isAnimated){
-    sprite = Sprite(graphics, filePath, startX, startY, posX, posY, width, height);
-  }
-  else{
-    animSprite = AnimatedSprite(graphics, filePath, startX, startY, std::ceil(posX), std::ceil(posY), width, height);
-    animSprite._spriteScale = 2;
-    animSprite.addAnimation(.02, length, 0, 0, "Anim", width, height, Vector2(0,0), "main");
-    animSprite.playAnimation("Anim");
+  if(filePath.compare("") != 0){
+    _noSprite = false;
+    if (!isAnimated){
+      sprite = Sprite(graphics, filePath, startX, startY, posX, posY, width, height);
+    }
+    else{
+      animSprite = AnimatedSprite(graphics, filePath, startX, startY, std::ceil(posX), std::ceil(posY), width, height);
+      animSprite._spriteScale = 2;
+      animSprite.addAnimation(.02, length, 0, 0, "Anim", width, height, Vector2(0,0), "main");
+      animSprite.playAnimation("Anim");
+    }
   }
   
   hitbox = Rectangle(posX, posY, width, height);
@@ -31,15 +35,17 @@ void EnemyHitbox::update(float dt, Player &player){
   if(_gravity)
     applyGravity(dt);
   hitbox.moveAnchor(hitbox.getLeft() + dt*_dx, hitbox.getTop() + dt*_dy);
-  if(_isAnimated){
-    animSprite.setXPlease(hitbox.getLeft());
-    animSprite.setYPlease(hitbox.getTop());
-    animSprite.update(dt);
-  }
-  else{
-    sprite.setX(hitbox.getLeft());
-    sprite.setY(hitbox.getTop());
-    sprite.update();
+  if(!_noSprite){
+    if(_isAnimated){
+      animSprite.setXPlease(hitbox.getLeft());
+      animSprite.setYPlease(hitbox.getTop());
+      animSprite.update(dt);
+    }
+    else{
+      sprite.setX(hitbox.getLeft());
+      sprite.setY(hitbox.getTop());
+      sprite.update();
+    }
   }
   
   _lifetime -= dt;
@@ -50,11 +56,13 @@ void EnemyHitbox::update(float dt, Player &player){
 }
 
 void EnemyHitbox::draw(Graphics &graphics){
-  if(_isAnimated){
-    animSprite.draw(graphics, hitbox.getLeft(), hitbox.getTop());
-  }
-  else{
-    sprite.draw(graphics, hitbox.getLeft(), hitbox.getTop());
+  if(!_noSprite){
+    if(_isAnimated){
+      animSprite.draw(graphics, hitbox.getLeft(), hitbox.getTop());
+    }
+    else{
+      sprite.draw(graphics, hitbox.getLeft(), hitbox.getTop());
+    }
   }
 }
 

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="20" height="25" tilewidth="32" tileheight="32" nextobjectid="73">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="20" height="25" tilewidth="32" tileheight="32" nextobjectid="75">
  <tileset firstgid="1" name="stage1_tilesheet" tilewidth="32" tileheight="32" tilecount="256">
   <image source="/Users/alex/GithubProjects/game_engine/content/tilesets/stage1_tilesheet.png" width="512" height="512"/>
  </tileset>
@@ -530,7 +530,7 @@
    <tile gid="0"/>
    <tile gid="3"/>
    <tile gid="4"/>
-   <tile gid="111"/>
+   <tile gid="168"/>
    <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="0"/>
@@ -550,7 +550,7 @@
    <tile gid="0"/>
    <tile gid="3"/>
    <tile gid="4"/>
-   <tile gid="111"/>
+   <tile gid="184"/>
    <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="0"/>
@@ -847,7 +847,7 @@
    <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="0"/>
-   <tile gid="0"/>
+   <tile gid="168"/>
    <tile gid="3"/>
    <tile gid="4"/>
    <tile gid="51"/>
@@ -867,7 +867,7 @@
    <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="0"/>
-   <tile gid="0"/>
+   <tile gid="184"/>
    <tile gid="3"/>
    <tile gid="4"/>
    <tile gid="51"/>
@@ -1065,6 +1065,12 @@
    <properties>
     <property name="spawnX" value="1216.00"/>
     <property name="spawnY" value="320.00"/>
+   </properties>
+  </object>
+  <object id="74" name="Map 3" x="576" y="512" width="32" height="64">
+   <properties>
+    <property name="spawnX" value="32.0"/>
+    <property name="spawnY" value="320.0"/>
    </properties>
   </object>
  </objectgroup>

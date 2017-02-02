@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="40" height="16" tilewidth="32" tileheight="32" nextobjectid="92">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="40" height="16" tilewidth="32" tileheight="32" nextobjectid="96">
  <tileset firstgid="1" name="stage1_tilesheet" tilewidth="32" tileheight="32" tilecount="256">
   <image source="/Users/alex/GithubProjects/game_engine/content/tilesets/stage1_tilesheet.png" width="512" height="512"/>
  </tileset>
@@ -1087,7 +1087,7 @@
    <tile gid="63"/>
    <tile gid="46"/>
    <tile gid="81"/>
-   <tile gid="81"/>
+   <tile gid="168"/>
    <tile gid="3"/>
    <tile gid="38"/>
    <tile gid="18"/>
@@ -1127,7 +1127,7 @@
    <tile gid="63"/>
    <tile gid="46"/>
    <tile gid="81"/>
-   <tile gid="81"/>
+   <tile gid="184"/>
    <tile gid="3"/>
    <tile gid="81"/>
    <tile gid="38"/>
@@ -1983,9 +1983,8 @@
   <object id="61" name="Walker" x="832" y="200"/>
   <object id="62" name="Walker" x="1160" y="344"/>
   <object id="69" name="Spitter" x="936" y="200"/>
-  <object id="70" name="SmallSpitter" x="256" y="304"/>
   <object id="71" name="Floater" x="360" y="168"/>
-  <object id="90" name="SmallMage" x="312" y="304"/>
+  <object id="95" name="Headless" x="280" y="288"/>
  </objectgroup>
  <objectgroup name="movingplatform">
   <object id="85" gid="133" x="528" y="232" width="32" height="32"/>

@@ -110,6 +110,22 @@ void Map::setCamera(SDL_Rect *camera){
   _camera.h = WINDOW_HEIGHT;
 }
 
+bool Map::screenShakeTrigger(){
+  if(_hitTrigger){
+    _hitTrigger = false;
+    return true;
+  }
+  return false;
+}
+
+bool Map::screenBigShakeTrigger(){
+  if(_deathTrigger){
+    _deathTrigger = false;
+    return true;
+  }
+  return false;
+}
+
 void Map::update(float elapsedTime, Player &player){
   for (int i = 0; i<_animTiles.size();i++){
     _animTiles.at(i).update(elapsedTime);
@@ -126,6 +142,12 @@ void Map::update(float elapsedTime, Player &player){
     if(_enemies.at(i)->isInCameraRange(&_camera)){
       handleEnemyCollisions(_enemies.at(i));
       _enemies.at(i)->update(elapsedTime, player);
+      if(_enemies.at(i)->getHitTrigger()){
+        _hitTrigger = true;
+        if(_enemies.at(i)->isPlayingDeathAnimation()){
+          _deathTrigger = true;
+        }
+      }
     }
     if(_enemies.at(i)->isDead()){
       delete _enemies.at(i);
@@ -145,25 +167,33 @@ void Map::draw(Graphics &graphics){
   
   for (int i = 0; i < _enemies.size(); i++){
     _enemies.at(i)->draw(graphics);
+    for(int j = 0; j< _enemies.at(i)->hitboxes.size() ;j++){
+      Rectangle c = _enemies.at(i)->hitboxes.at(j).hitbox;
+      c.moveAnchor(c.getLeft()-_camera.x, c.getTop() - _camera.y);
+      SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getTop(),c.getLeft()+c.getWidth(),c.getTop());
+      SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getTop(),c.getLeft(),c.getBottom());
+      SDL_RenderDrawLine(graphics.getRenderer(), c.getRight(),c.getTop(),c.getRight(),c.getBottom());
+      SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getBottom(),c.getLeft()+c.getWidth(),c.getBottom());
+    }
   }
   
-  for (Enemy* e : _enemies){
+  /*for (Enemy* e : _enemies){
     Rectangle c = e->getCollider();
     c.moveAnchor(c.getLeft()-_camera.x, c.getTop() - _camera.y);
     SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getTop(),c.getLeft()+c.getWidth(),c.getTop());
     SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getTop(),c.getLeft(),c.getBottom());
     SDL_RenderDrawLine(graphics.getRenderer(), c.getRight(),c.getTop(),c.getRight(),c.getBottom());
     SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getBottom(),c.getLeft()+c.getWidth(),c.getBottom());
-  }
+  }*/
   
   for(int i = 0; i<_specialTiles.size();i++){
     _specialTiles.at(i)->draw(graphics);
-    Rectangle c = _specialTiles.at(i)->getCollider();
+    /*Rectangle c = _specialTiles.at(i)->getCollider();
     c.moveAnchor(c.getLeft()-_camera.x, c.getTop() - _camera.y);
     SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getTop(),c.getLeft()+c.getWidth(),c.getTop());
     SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getTop(),c.getLeft(),c.getBottom());
     SDL_RenderDrawLine(graphics.getRenderer(), c.getRight(),c.getTop(),c.getRight(),c.getBottom());
-    SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getBottom(),c.getLeft()+c.getWidth(),c.getBottom());
+    SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getBottom(),c.getLeft()+c.getWidth(),c.getBottom());*/
   }
 }
 
@@ -452,7 +482,7 @@ void Map::LoadObjects(int *mapNode, Graphics &graphics)
           _doors.push_back(newDoor);
           
           
-          door = objectGroup->NextSiblingElement("object");
+          door = door->NextSiblingElement("object");
           
           
         }
@@ -551,6 +581,10 @@ void Map::LoadObjects(int *mapNode, Graphics &graphics)
           
           if(strcmp(enemyType, "SmallMage") == 0){
             _enemies.push_back(new SmallMage(graphics, Vector2(x,y)));
+          }
+          
+          if(strcmp(enemyType, "Headless") == 0){
+            _enemies.push_back(new Headless(graphics, Vector2(x,y)));
           }
           
           enemy = enemy->NextSiblingElement("object");
