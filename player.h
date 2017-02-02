@@ -15,6 +15,35 @@ struct COLLIDER {
   Vector2 offset;
 };
 
+struct CameraOffset{
+  Vector2 offset;
+  float radius;
+  float randomAngle;
+  bool active;
+  
+  CameraOffset(){
+    //active = false;
+  }
+  
+  CameraOffset(float r){
+    radius = r;
+    randomAngle = rand()%360;
+    offset = Vector2( sin(randomAngle) * radius , cos(randomAngle) * radius);
+    active = true;
+  }
+  
+  void shake(){
+    if(active){
+      radius *= .9;
+      randomAngle += (150 + rand()%60);
+      offset = Vector2(sin(randomAngle)*radius , cos(randomAngle)*radius);
+      if(radius < 1){
+        active = false;
+      }
+    }
+  }
+};
+
 class Player : public AnimatedSprite{
 public:
   Player();
@@ -40,12 +69,16 @@ public:
     if (!_charging){
       _charging = true;
       _chargeDelay = true;
+      _fullCharge = true;
     }
   }
   void stopCharging(){
     if(_charging){
       _charging = false;
+      _chargeDelay = false;
+      _fullCharge = false;
       sfx.endSFX(CHARGE2);
+      sfx.endSFX(CHARGED);
     }
   }
   void shoot();
@@ -60,9 +93,19 @@ public:
   
   std::vector<Arrow> arrows;
   
-  void setCamera(SDL_Rect* screen, Map map);
+  void setCamera(SDL_Rect* screen, Map map, bool start = false);
+  void shakeCamera(float r){
+    offset = CameraOffset(r);
+  }
   void changeHealth(int x);
   void takeDamage(int x);
+  bool gotHit(){
+    if (_gotHit){
+      _gotHit = false;
+      return true;
+    }
+    return false;
+  }
   bool getInvulnerable();
   bool getDead();
   bool hitRegistered();
@@ -96,7 +139,7 @@ private:
   int _combo = 0;
   bool _charging;
   float _chargeTime;
-  bool _chargeDelay;
+  bool _chargeDelay, _fullCharge;
   void createArrow();
   bool arrowDelay = false;
   
@@ -113,6 +156,7 @@ private:
   int _jumps = 1;
   
   //damage booleans
+  bool _gotHit = false;
   float _invulnerableTimer, _knockBackTimer, _knockBackValue;
   bool _knockBack, _invulnerable;
   bool _dead = false;
@@ -125,6 +169,8 @@ private:
   Door transitionDoor;
   
   float _oldX, _oldY;
+  
+  CameraOffset offset;
   
 };
 

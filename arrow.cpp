@@ -118,9 +118,13 @@ void Arrow::handleEnemyCollisions(Map &map){
     std::vector<Enemy*> enemies = map.checkEnemyCollisions(_collider);
     std::vector<Rectangle> tiles;
     for(Enemy* enemy : enemies){
-      if (!enemy->isPlayingDeathAnimation()){
+      bool isDamagable = enemy->IsDamagable(_collider.getCenterX());
+      if (!enemy->isPlayingDeathAnimation() && isDamagable){
         tiles.push_back(enemy->getCollider());
         enemy->changeHealth(-1);
+      }
+      if(!isDamagable){
+        done = true;
       }
       
     }

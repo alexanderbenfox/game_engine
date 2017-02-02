@@ -18,9 +18,6 @@ Sprite::Sprite(Graphics &graphics, const std::string &filePath, int sourceX, int
   //do the file loading stuff
   //
 Uint32 rmask, gmask, bmask, amask;
-
-  /* SDL interprets each pixel as a 32-bit number, so our masks must depend
-   on the endianness (byte order) of the machine */
   #if SDL_BYTEORDER == SDL_BIG_ENDIAN
     rmask = 0xff000000;
     gmask = 0x00ff0000;
@@ -32,16 +29,6 @@ Uint32 rmask, gmask, bmask, amask;
     bmask = 0x00ff0000;
     amask = 0xff000000;
   #endif
-
-  SDL_Surface *surface = SDL_CreateRGBSurface(0, 640, 480, 32, rmask, gmask, bmask, amask);
-  SDL_Surface *theSurface = IMG_Load(filePath.c_str());
-  if(theSurface == NULL)
-  {
-    printf("Unable to load image %s SDL_Image error: %s\n", filePath.c_str(), SDL_GetError());
-  }
-  //SDL_Surface *optSurface = SDL_ConvertSurface(surface, SDL_GetWindowSurface(graphics.getWindow())->format, NULL);
-  //graphics.loadImage(filePath);
-  SDL_Surface *theWindow = SDL_GetWindowSurface(graphics.getWindow());
   if(SpriteLoader::spriteLoaded(filePath)){
     _spriteSheet = SpriteLoader::getTexture(filePath);
   }else{
