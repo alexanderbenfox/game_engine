@@ -52,6 +52,8 @@ public:
   
   void collidePlayer(Player* player);
   bool isInCameraRange(SDL_Rect* camera);
+  bool getWithinStrikeZone(Player player, float radius);
+  bool IsDamagable(float centerX);
   
   
   COLLIDER cur_collider;
@@ -62,6 +64,8 @@ public:
   void setStationary(){
     _stationary = true;
   }
+  
+  bool getHitTrigger();
   
   
 protected:
@@ -91,6 +95,10 @@ protected:
   bool _tileCollides = true;
   
   bool _stationary = false;
+  bool _gotHit = false;
+  
+  bool _charging, _wait;
+  bool _shieldUp = false;
 };
 
 class Walker : public Enemy{
@@ -206,8 +214,6 @@ protected:
   
   float _projectileTime = .01;
   float _projectileTimeMax = .01;
-  
-  bool _charging, _wait;
 };
 
 class SmallMage : public Enemy{
@@ -232,6 +238,25 @@ protected:
   
   float _projectileTime = .02;
   float _projectileTimeMax = .02;
+};
+
+class Headless : public Enemy{
+public:
+  Headless();
+  Headless(Graphics &graphics, Vector2 spawnPoint);
+  void update(float dt, Player &player);
+  void draw (Graphics &graphics);
+  void playerCollision(Player* player);
+  
+  void handleRightCollision(Rectangle tile);
+  void handleLeftCollision(Rectangle tile);
+  void handleUpCollision(Rectangle tile);
+  void handleDownCollision(Rectangle tile);
+  
+  void applyGravity(float dt);
+  
+protected:
+  void setupAnimations();
 };
 
 

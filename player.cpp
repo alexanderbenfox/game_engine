@@ -7,7 +7,6 @@ Player::Player() {}
 
 Player::Player(Graphics &graphics, const std::string &filePath, int startX, int startY,float posX, float posY,int height, int width) : AnimatedSprite(graphics,filePath,startX,startY,posX,posY,height,width)
 {
-  aManager = ArrowSprites(graphics);
   srand(time(NULL));
   _dy = 0;
   
@@ -59,6 +58,7 @@ Player::Player(Graphics &graphics, const std::string &filePath, int startX, int 
   _dodge = false;
   _charging = false;
   _chargeDelay = false;
+  _fullCharge = false;
   _shoot = false;
   _bufferShoot = false;
   
@@ -139,11 +139,21 @@ void Player::update(float elapsedTime)
       sfx.addSFX(CHARGE2, this->getX()-22*_spriteScale, this->getY()-10*_spriteScale);
       _chargeDelay = false;
     }
+    
+    if(_chargeTime > .4 && _fullCharge){
+      sfx.endSFX(CHARGE2);
+      sfx.addSFX(CHARGED, this->getX()-22*_spriteScale, this->getY()-10*_spriteScale);
+      sfx.addSFX(explosion, this->getX()-10*_spriteScale, this->getY()-10*_spriteScale);
+      sfx.addSFX(explosion, this->getX()+10*_spriteScale, this->getY()+10*_spriteScale);
+      sfx.addSFX(explosion, this->getX()-15*_spriteScale, this->getY()+10*_spriteScale);
+      _fullCharge = false;
+    }
   }
   
   this->setY(this->getY() + _dy*elapsedTime);
   this->setX(this->getX() + _dx*elapsedTime);
   sfx.moveSFX(CHARGE2, getX()-_oldX, getY()-_oldY);
+  sfx.moveSFX(CHARGED, getX()-_oldX, getY()-_oldY);
     
   for(int i = 0; i < arrows.size(); i++){
     arrows[i].update(elapsedTime);
@@ -415,9 +425,12 @@ void Player::check_crouch(bool crouch){
     _crouched = false;
 }
 
-void Player::setCamera(SDL_Rect* screen, Map map){
-  int x = this->getX()+ _collider.getWidth()/2 - WINDOW_WIDTH/2;
-  int y = this->_collider.getCenterY() +_collider.getHeight()/2 - WINDOW_HEIGHT/2;
+void Player::setCamera(SDL_Rect* screen, Map map, bool start){
+  float x = this->getX()+ _collider.getWidth()/2 - WINDOW_WIDTH/2;
+  float y = this->_collider.getCenterY() +_collider.getHeight()/2 - WINDOW_HEIGHT/2;
+  
+  float shake_x = 0;
+  float shake_y = 0;
   
   if(x < 0){
     x = 0;
@@ -434,10 +447,43 @@ void Player::setCamera(SDL_Rect* screen, Map map){
     y = map.getSize().y*SPRITE_SCALE - WINDOW_HEIGHT;
   }
   
-  screen->x = x;
-  screen->y = y;
+  float cameraSpeed = .1;
+  
+  float distanceX = -screen->x + x;
+  float distanceY = -screen->y + y;
+  
+  float moveX = screen->x + distanceX*cameraSpeed;
+  float moveY = screen->y + distanceY*cameraSpeed;
+  
+  if(offset.active){
+    shake_x = offset.offset.x;
+    shake_y = offset.offset.y;
+    offset.shake();
+  }
+  
+  if(!start){
+    screen->x = moveX + shake_x;
+    screen->y = moveY + shake_y;
+  }
+  else{
+    screen->x = x;
+    screen->y = y;
+  }
   
 }
+
+/*void Player::screenShake(){
+  //intial shake
+  float radius = 30.0;
+  float randomAngle = rand()%360;
+  Vector2 offset = Vector2( sin(randomAngle) * radius , cos(randomAngle) * radius);
+  
+  if(radius < 30.0){
+    radius *= .9;
+    randomAngle += (150 + rand()%60);
+    offset = Vector2(sin(randomAngle)*radius , cos(randomAngle)*radius);
+  }
+}*/
 
 bool Player::handleDoorCollisions(Map &map){
   bool atDoor = false;
@@ -617,13 +663,13 @@ void Player::createArrow(){
   if(_flipped)
     x = getX() - 32-10;
   if(_chargeTime <= 0.4){
-    Arrow arrow(*_graphics,x, y, !_flipped, aManager);
+    Arrow arrow(*_graphics, "sprites/arrow.png",1 ,1, x, y, 32, 64, !_flipped);
     arrows.push_back(arrow);
   }
   else{
-    Arrow arrow(*_graphics, x, y, !_flipped,aManager);
-    Arrow arrow2(*_graphics, x, y,!_flipped,aManager, 1000);
-    Arrow arrow3(*_graphics, x, y,!_flipped,aManager, -1000);
+    Arrow arrow(*_graphics, "sprites/arrow.png",1 ,1, x, y, 32, 64, !_flipped);
+    Arrow arrow2(*_graphics, "sprites/arrow.png",1 ,1, x, y, 32, 64, !_flipped, 1500.0);
+    Arrow arrow3(*_graphics, "sprites/arrow.png",1 ,1, x, y, 32, 64, !_flipped,-1500.0);
     arrows.push_back(arrow);
     arrows.push_back(arrow2);
     arrows.push_back(arrow3);
@@ -643,6 +689,8 @@ void Player::changeHealth(int x){
 void Player::takeDamage(int x){
   if(!_dodge){
     changeHealth(-x);
+    
+    _gotHit = true;
     
     //set knock back
     _dy = -2000.0;

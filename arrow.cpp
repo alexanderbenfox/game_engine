@@ -1,37 +1,29 @@
 #include "arrow.h"
 #include "enemy.h"
 
-Arrow::Arrow(Graphics &graphics, int startX, int startY, bool right, ArrowSprites a, float velY){
-  
+Arrow::Arrow(Graphics &graphics, const std::string &filePath, int startX, int startY,float posX, float posY,int height, int width, bool right, float velY) : AnimatedSprite(graphics,filePath,startX,startY,posX,posY,height,width){
+  _spriteScale = 1.5;
   _dx = right ? 9000.0 : -9000.0;
   _dy = velY;
+  _flipped = !right;
   done = false;
-  _x = startX;
-  _y = startY;
   
-  _collider = Rectangle(_x,_y, 64*1.5, 32*1.5);
+  _collider = Rectangle(this->getX(),this->getY(), width*_spriteScale, height*_spriteScale);
   
-  if(right){
-    theArrow = a.arrowR;
-    _stuck = a.stuckR;
-    _baseghost = a.ghostR;
-    
-  }
-  else{
-    theArrow = a.arrowL;
-    _stuck = a.stuckL;
-    _baseghost = a.ghostL;
-  }
+  _baseghost = Sprite(graphics, "sprites/arrowtrail.png", 0,0,1,1,64,32);
+  _baseghost._spriteScale = 1.8;
   
-  _baseghost->_spriteScale = 1.8;
-  _stuck->_spriteScale = 1.5;
-  theArrow->_spriteScale = 1.5;
+  _stuck = Sprite(graphics,"sprites/arrowhalf.png",0,0,1,1,32,32);
+  _stuck._spriteScale = 1.5;
+  _stuck.setFlipped(!right);
   
   _ghostPeriod = 0.02;
-  //int i = rand()%25 + 15;
-  int i = 15;
+  srand(time(NULL));
+  int i = rand()%25 + 15;
   _ghostPeriod = ((float)i)/1000.0;
-  sfx = SFXManager(graphics, true);
+  std::cout<<"HOST"<<_ghostPeriod<<std::endl;
+  
+  sfx = SFXManager(graphics);
   
   
 }
@@ -42,7 +34,9 @@ Arrow::~Arrow(){
 
 void Arrow::update(float deltaTime){
   sfx.update(deltaTime);
-  _collider = Rectangle(_x,_y,_collider.getWidth(), _collider.getHeight());
+  this->setX(this->getX() + _dx*deltaTime);
+  this->setY(this->getY() + _dy*deltaTime);
+  _collider = Rectangle(this->getX(),this->getY(),_collider.getWidth(), _collider.getHeight());
   
   for(int i = 0; i < trail.size(); i++){
     trail[i].lifetime += deltaTime;
@@ -52,24 +46,20 @@ void Arrow::update(float deltaTime){
   }
   
   if(_lifetime < 100.0){
-    theArrow->setVisible(false);
+    this->setVisible(false);
     _lifetime -= deltaTime;
     if(_lifetime <= 0)
     {
       done = true;
     }
   }
-  else{
-    _x = (_x + _dx*deltaTime);
-    _y = (_y + _dy*deltaTime);
-  }
   
   _trailTime += deltaTime;
   
   if (_trailTime > _ghostPeriod && _lifetime == 100.0){
     ghost newg;
-    newg.x = (_x);
-    newg.y = (_y);
+    newg.x = (this->getX());
+    newg.y = (this->getY());
     newg.lifetime = 0;
     
     _trailTime = 0;
@@ -82,43 +72,41 @@ void Arrow::update(float deltaTime){
 void Arrow::draw(Graphics &graphics){
   sfx.draw(graphics);
   if(_lifetime == 100.0)
-    theArrow->draw(graphics, _x, _y);
+    Sprite::draw(graphics, this->getX(), this->getY());
   //SDL_RenderDrawLine(graphics.getRenderer(), this->_collider.getLeft(),this->_collider.getTop(),this->_collider.getLeft()+_collider.getWidth(),this->_collider.getTop()+_collider.getHeight());
   for(ghost arrow : trail){
-    _baseghost->draw(graphics, arrow.x, arrow.y);
+    _baseghost.draw(graphics, arrow.x, arrow.y);
   }
   
   if(_lifetime < 100.0){
-    _stuck->draw(graphics,stuckPos.x,stuckPos.y);
+    _stuck.draw(graphics,_stuck.getX(),_stuck.getY());
   }
 }
 
 void Arrow::handleCollisions(Map &map){
-  if(!_hitWall){
-    std::vector<Rectangle> tiles = map.checkTileCollisions(_collider);
-    for (Rectangle tile : tiles){
-      collision_sides::Side side = _collider.getCollisionSide(tile);
-      if (side != collision_sides::NONE){
-        switch(side){
-          case(collision_sides::RIGHT) :
-            _hitWall = true;
-            _dx = (_dx > 0) ? 0 : _dx;
-            _x = (tile.getLeft() - _collider.getWidth()-2);
-            //done = true;
-            _lifetime = 2.0;
-            stuckPos = Vector2(_x+50, _y);
-            sfx.addSFX(arrow_blast, _x+50, _collider.getCenterY()-32);
-            break;
-          case(collision_sides::LEFT) :
-            _hitWall = true;
-            _dx = (_dx < 0) ? 0 : _dx;
-            _x = (tile.getRight()-1 + 2);
-            //done = true;
-            _lifetime = 2.0;
-            stuckPos = Vector2(_x,_y);
-            sfx.addSFX(arrow_blast, _x -32, _collider.getCenterY()-32);
-            break;
-        }
+  std::vector<Rectangle> tiles = map.checkTileCollisions(_collider);
+  for (Rectangle tile : tiles){
+    collision_sides::Side side = Sprite::getCollisionSide(tile);
+    if (side != collision_sides::NONE){
+      switch(side){
+        case(collision_sides::RIGHT) :
+          _dx = (_dx > 0) ? 0 : _dx;
+          this->setX(tile.getLeft() - _collider.getWidth()-2);
+          //done = true;
+          _lifetime = 2.0;
+          _stuck.setX(this->getX()+50);
+          _stuck.setY(this->getY());
+          sfx.addSFX(arrow_blast, this->getX()+50, this->getCollider().getCenterY()-32);
+          break;
+        case(collision_sides::LEFT) :
+          _dx = (_dx < 0) ? 0 : _dx;
+          this->setX(tile.getRight()-1 + 2);
+          //done = true;
+          _lifetime = 2.0;
+          _stuck.setX(this->getX());
+          _stuck.setY(this->getY());
+          sfx.addSFX(arrow_blast, this->getX() -32, this->getCollider().getCenterY()-32);
+          break;
       }
     }
   }
@@ -130,41 +118,40 @@ void Arrow::handleEnemyCollisions(Map &map){
     std::vector<Enemy*> enemies = map.checkEnemyCollisions(_collider);
     std::vector<Rectangle> tiles;
     for(Enemy* enemy : enemies){
-      if (!enemy->isPlayingDeathAnimation()){
+      bool isDamagable = enemy->IsDamagable(_collider.getCenterX());
+      if (!enemy->isPlayingDeathAnimation() && isDamagable){
         tiles.push_back(enemy->getCollider());
-        enemy->changeHealth(-2);
-        _hitEnemy = true;
+        enemy->changeHealth(-1);
+      }
+      if(!isDamagable){
+        done = true;
       }
       
     }
     for (Rectangle tile : tiles){
-      collision_sides::Side side = _collider.getCollisionSide(tile);
+      collision_sides::Side side = Sprite::getCollisionSide(tile);
       if (side != collision_sides::NONE){
         switch(side){
           case(collision_sides::RIGHT) :
-            _hitEnemy = true;
-            _x = (tile.getLeft() - _collider.getWidth()-2);
+            this->setX(tile.getLeft() - _collider.getWidth()-2);
             _lifetime = 2.0;
             _hitEnemy = true;
             if(_dx > 0)
-              sfx.addSFX(splatter, tile.getCenterX()-64 + 10, _collider.getCenterY()-64, false);
+              sfx.addSFX(splatter, tile.getCenterX()-64 + 10, this->getCollider().getCenterY()-64, false);
             else
-              sfx.addSFX(splatter, tile.getCenterX()-64 - 10, _collider.getCenterY()-64, true);
+              sfx.addSFX(splatter, tile.getCenterX()-64 - 10, this->getCollider().getCenterY()-64, true);
             _dx = (_dx > 0) ? 0 : _dx;
-            _dy = 0;
             break;
           case(collision_sides::LEFT) :
-            _hitEnemy = true;
-            _x = (tile.getRight()-1 + 2);
+            this->setX(tile.getRight()-1 + 2);
             _lifetime = 2.0;
             _hitEnemy = true;
             if(_dx > 0)
-              sfx.addSFX(splatter, tile.getCenterX()-64 + 10, _collider.getCenterY()-64, false);
+              sfx.addSFX(splatter, tile.getCenterX()-64 + 10, this->getCollider().getCenterY()-64, false);
             else
-              sfx.addSFX(splatter, tile.getCenterX()-64 - 10, _collider.getCenterY()-64, true);
+              sfx.addSFX(splatter, tile.getCenterX()-64 - 10, this->getCollider().getCenterY()-64, true);
             
             _dx = (_dx < 0) ? 0 : _dx;
-            _dy = 0;
             break;
         }
       }

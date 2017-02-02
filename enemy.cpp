@@ -20,6 +20,7 @@ Enemy::Enemy(Graphics &graphics, const std::string &filePath, int startX, int st
   _sfx = SFXManager(graphics);
   
   _graphics = &graphics;
+  _shieldUp = false;
   
 }
 void Enemy::update(float dt, Player &player){
@@ -45,6 +46,12 @@ void Enemy::draw(Graphics &graphics){
   for(EnemyHitbox hitbox : hitboxes){
     hitbox.draw(graphics);
   }
+}
+
+bool Enemy::getWithinStrikeZone(Player player, float radius){
+  float centerX = this->getX() + cur_collider.width/2;
+  bool withinStrikeZone =(player.getCollider().getCenterX() > (centerX-radius*SPRITE_SCALE)) && (player.getCollider().getCenterX() < (centerX+radius*SPRITE_SCALE));
+  return withinStrikeZone;
 }
 
 void Enemy::handleRightCollision(Rectangle tile){
@@ -128,8 +135,44 @@ void Enemy::handleSlopeCollisions(std::vector<Slope> slopes, bool otherCollision
   }
 }
 
+bool Enemy::IsDamagable(float compareX){
+  bool damageInFront = false;
+  float centerX = this->getX() + cur_collider.width/2;
+  if(compareX > centerX && _direction > 0)
+    damageInFront = true;
+  
+  if(compareX < centerX && _direction < 0)
+    damageInFront = true;
+  
+  if(!_shieldUp){
+    return true;
+  }
+  else if(_shieldUp && damageInFront){
+    float x = _direction > 0 ? this->getX() + cur_collider.width/2 : this->getX()-cur_collider.width/2;
+    _sfx.addSFX(arrow_blast, x, this->getY());
+    return false;
+  }
+  else{
+    return true;
+  }
+}
+
 void Enemy::changeHealth(int amount){
   _currentHealth += amount;
+  if(amount < 0){
+    _gotHit = true;
+    if(_currentHealth <= 0){
+      _death = true;
+    }
+  }
+}
+
+bool Enemy::getHitTrigger(){
+  if(_gotHit){
+    _gotHit = false;
+    return true;
+  }
+  return false;
 }
 
 void Enemy::setDeathAnim(){
@@ -175,13 +218,14 @@ void Enemy::playDeathSFX(float dt){
 
 void Enemy::knockBack(float direction, bool strong){
   if(strong)
-    _knockBackValue = 800.0;
+    _knockBackValue = 600.0;
   else
     _knockBackValue = 500.0;
+  _dy = 0;
   _dy -= 1000;
   _knockBack = true;
   _knockDirection = direction;
-  _actionTimer = 0.2;
+  _actionTimer = 0.25;
 }
 
 void Enemy::collidePlayer(Player *player){
@@ -190,7 +234,7 @@ void Enemy::collidePlayer(Player *player){
 
 bool Enemy::isInCameraRange(SDL_Rect *camera){
   bool inRange = false;
-  int margin = 100*SPRITE_SCALE;
+  int margin = 70*SPRITE_SCALE;
   int x1 = camera->x-margin;
   int x2 = camera->x + camera->w + margin;
   int y1 = camera->y-margin;
@@ -389,7 +433,12 @@ void Spitter::update(float dt, Player &player){
     }
     
     if(_actionTimer <= 0 && _attacking){
-      EnemyHitbox projectile = EnemyHitbox(*_graphics, "sprites/spittingmonsterproj.png", 0, 0, this->getX(), this->getY(), 32, 32, _direction*1700.0, 0, .15, false, false);
+      float x_vect = player.getCollider().getCenterX() - _collider.getCenterX();
+      float y_vect = player.getCollider().getCenterY() - this->getY();
+      float mag = sqrtf(x_vect*x_vect + y_vect*y_vect);
+      x_vect/=mag;
+      y_vect/=mag;
+      EnemyHitbox projectile = EnemyHitbox(*_graphics, "sprites/spittingmonsterproj.png", 0, 0, _collider.getCenterX(), this->getY(), 32, 32, x_vect*1700.0, y_vect*1700.0, .2, false, false);
       hitboxes.push_back(projectile);
       _attacking = false;
     }
@@ -1001,6 +1050,170 @@ void SmallMage::setupAnimations(){
   
   this->playAnimation("Idle");
 }
+
+
+
+Headless::Headless(){}
+
+Headless::Headless(Graphics &graphics, Vector2 spawnPoint) : Enemy(graphics, "sprites/headless-monster.png", 1, 1,spawnPoint.x, spawnPoint.y ,64, 64)
+{
+  _spawnPoint = Vector2(spawnPoint);
+  setupAnimations();
+  
+  COLLIDER normal = {.width = (int)(28*_scale), .height = (int)(64*_scale), .offset = Vector2(0,0)};
+  cur_collider = normal;
+  
+  _maxHealth = 10;
+  _currentHealth = _maxHealth;
+  
+}
+void Headless::update(float dt, Player &player){
+  Enemy::update(dt, player);
+  applyGravity(dt);
+  Enemy::setDeathAnim();
+  
+  if(_actionTimer <= 0){
+    _shieldUp = true;
+    _currentAnimationDone = false;
+    this->playAnimation("Walk");
+    
+    if(_direction > 0 && _colRight){
+      _direction = -1;
+      _colRight = false;
+    }
+    if (_direction < 0 && _colLeft){
+      _direction = 1;
+      _colLeft = false;
+    }
+    
+    bool playerToTheRight = (player.getCollider().getCenterX() > (this->getX()+16 + 100));
+    bool playerToTheLeft = (player.getCollider().getCenterX() < (this->getX()+16 - 100));
+    
+    if (playerToTheRight && _direction < 0)
+      _direction = 1;
+    
+    if (playerToTheLeft && _direction > 0)
+      _direction = -1;
+    
+    bool withinZone = getWithinStrikeZone(player, 64);
+    
+    if(!withinZone){
+      _dx = (_direction) * 300.0;
+    }else{
+      _dx = 0;
+      _actionTimer = 0.2;
+      _charging = true;
+    }
+  }
+  else{
+    _shieldUp = false;
+    if(_death){
+      _charging = false;
+      _knockBack = false;
+      _attacking = false;
+      _wait = false;
+      this->playAnimation("Death", true);
+      this->playDeathSFX(dt);
+      _dx = 0;
+    }
+    if(_knockBack){
+      this->playAnimation("Hit");
+      _attacking = false;
+      _wait = false;
+      _dx = _knockDirection*_knockBackValue;
+      if(_knockBackValue > 0)
+        _knockBackValue -= _knockBackSlow;
+    }
+    
+    _actionTimer -= dt;
+    
+    if(_charging){
+      _shieldUp = true;
+      this->playAnimation("Charge");
+      if(_actionTimer <= 0){
+        _charging = false;
+        _attacking = true;
+        _actionTimer = getAnimationTime("Attack");
+      }
+    }
+    
+    if(_attacking){
+      this->playAnimation("Attack");
+      float box_pos_x = -60*SPRITE_SCALE;
+      if(_direction > 0)
+        box_pos_x = 23*SPRITE_SCALE;
+        
+      EnemyHitbox swordhitbox = EnemyHitbox(*_graphics, "", 0, 0, this->getX() + 16 *SPRITE_SCALE + box_pos_x, this->getY(), 50*SPRITE_SCALE, 32*SPRITE_SCALE, 0, 0, .1,false, false);
+      hitboxes.push_back(swordhitbox);
+      if(_actionTimer <= 0){
+        _attacking = false;
+        _wait = true;
+        _actionTimer = 0.1;
+      }
+    }
+    
+    if(_wait){
+      _shieldUp = false;
+      this->playAnimation("Open");
+      if(_actionTimer <= 0){
+        _wait = false;
+      }
+      
+    }
+    
+    if(_currentAnimationDone)
+      _actionTimer = 0;
+    
+    if(_actionTimer <= 0 && _knockBack)
+    {
+      _knockBack = false;
+    }
+    
+    if(_actionTimer <= 0 && _death){
+      _dead = true;
+    }
+  }
+  
+  this->setY(this->getY() + _dy*dt);
+  this->setX(this->getX() + _dx*dt);
+}
+void Headless::draw (Graphics &graphics){
+  Enemy::draw(graphics);
+}
+void Headless::playerCollision(Player* player){
+  player->changeHealth(-1);
+}
+
+void Headless::handleRightCollision(Rectangle tile){
+  Enemy::handleRightCollision(tile);
+}
+
+void Headless::handleLeftCollision(Rectangle tile){
+  Enemy::handleLeftCollision(tile);
+}
+void Headless::handleUpCollision(Rectangle tile){
+  Enemy::handleUpCollision(tile);
+}
+void Headless::handleDownCollision(Rectangle tile){
+  Enemy::handleDownCollision(tile);
+}
+
+void Headless::applyGravity(float dt){
+  _dy += (GRAVITY*dt);
+}
+
+void Headless::setupAnimations(){
+  this->addAnimation(.01, 2, 0, 0, "Idle", 64, 64, Vector2(0,0),"main");
+  this->addAnimation(.05, 2, 2, 0, "Walk", 64, 64, Vector2(0,0),"main");
+  this->addAnimation(.04, 2, 4, 0, "Charge", 64, 64, Vector2(0,0),"main");
+  this->addAnimation(.01, 3, 5, 0, "Attack", 64, 64, Vector2(0,0),"main");
+  this->addAnimation(.01, 1, 7, 0, "Open", 64, 64, Vector2(0,0), "main");
+  this->addAnimation(.01, 1, 8, 0, "Hit", 64, 64, Vector2(0,0),"main");
+  this->addAnimation(.05, 5, 9, 0, "Death", 64, 64, Vector2(0,0),"main");
+  
+  this->playAnimation("Idle");
+}
+
 
 
 

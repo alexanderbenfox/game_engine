@@ -4,7 +4,7 @@
 SFXManager::SFXManager(){}
 
 SFXManager::SFXManager(Graphics &graphics, bool arrow){
-  /*if (!arrow){
+  if (!arrow){
     SFX_SPRITES dust(&graphics, 0.03, 3, 24, 0.05);
     SFX_SPRITES arrow_exp(&graphics, 0.01, 5, 27, 0.05);
     SFX_SPRITES splat(&graphics, 0.01, 6, 32, 0.06);
@@ -17,6 +17,8 @@ SFXManager::SFXManager(Graphics &graphics, bool arrow){
     SFX_SPRITES charge1(&graphics, 0.01,4,49,100, CHARGE1);
     SFX_SPRITES charge2(&graphics, 0.02,5,53,100, CHARGE2);
     
+    SFX_SPRITES charged(&graphics, 0.03,4,59,100,CHARGED);
+    
     _baseSprites[arrow_blast] = arrow_exp;
     _baseSprites[DUST] = dust;
     _baseSprites[splatter] = splat;
@@ -27,6 +29,7 @@ SFXManager::SFXManager(Graphics &graphics, bool arrow){
     _baseSprites[blood2] = blood2_;
     _baseSprites[CHARGE1] = charge1;
     _baseSprites[CHARGE2] = charge2;
+    _baseSprites[CHARGED] = charged;
   }
   else{
     SFX_SPRITES arrow_exp(&graphics, 0.01, 5, 27, 0.05);
@@ -34,9 +37,7 @@ SFXManager::SFXManager(Graphics &graphics, bool arrow){
     _baseSprites[splatter] = splat;
     _baseSprites[arrow_blast] = arrow_exp;
     
-  }*/
-  _sfx = SFXSpriteLoader::getSFX(graphics);
-  _baseSprites = SFXSpriteLoader::getSprites(graphics);
+  }
   
 }
 

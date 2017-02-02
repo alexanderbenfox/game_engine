@@ -44,6 +44,9 @@ public:
   const Vector2 getPlayerSpawnPoint() const;
   void setCamera(SDL_Rect *camera);
   
+  bool screenShakeTrigger();
+  bool screenBigShakeTrigger();
+  
   Vector2 getSize();
   
 protected:
@@ -105,6 +108,8 @@ protected:
   }
   
 private:
+  bool _hitTrigger = false;
+  bool _deathTrigger = false;
   static unsigned int split(const std::string &txt, std::vector<std::string> &strs, char ch) {
     int pos = txt.find(ch);
     int initialPos = 0;

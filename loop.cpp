@@ -161,6 +161,7 @@ void GameLoop::loop() {
   Vector2 spawnPoint = map.getPlayerSpawnPoint();
   this->player = Player(graphics, "sprites/playerspritesheett.png",1 ,1, spawnPoint.x-32, spawnPoint.y - 60, 64, 32);
   player.playAnimation("Idle");
+  player.setCamera(&camera, map, true);
   int pauseTime = 0;
   
   //graphics.setCamera(&player.camera.screen);
@@ -276,7 +277,6 @@ void GameLoop::loop() {
           player.update(clock.frametime);
           player.applyGravity(clock.frametime);
           player.handleCollisions(map);
-          player.setCamera(&camera,map);
           
           //transition to another room
           if (player.handleDoorCollisions(map) && input.keyWasPressed(SDL_SCANCODE_UP)){
@@ -284,8 +284,18 @@ void GameLoop::loop() {
             this->map = Map(newRoom.getDestination(),graphics);
             player.setX(newRoom.getSpawn().x);
             player.setY(newRoom.getSpawn().y);
+            player.setCamera(&camera, map,true);
           }
         }
+        
+        //if(map.screenShakeTrigger())
+        //  player.shakeCamera(5.0);
+        if(map.screenBigShakeTrigger())
+          player.shakeCamera(20.0);
+        if(player.gotHit())
+          player.shakeCamera(30.0);
+        
+        player.setCamera(&camera,map);
         
         
         map.setCamera(&camera);
