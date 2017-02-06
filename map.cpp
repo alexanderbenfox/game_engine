@@ -578,13 +578,36 @@ void Map::LoadObjects(int *mapNode, Graphics &graphics)
             _enemies.push_back(new SwordMan(graphics, Vector2(x,y)));
           }
           
+          if(strcmp(enemyType, "Rat") == 0){
+            _enemies.push_back(new Rat(graphics, Vector2(x,y)));
+          }
           
           if(strcmp(enemyType, "SmallMage") == 0){
-            _enemies.push_back(new SmallMage(graphics, Vector2(x,y)));
+            Enemy* smallMage = new SmallMage(graphics, Vector2(x,y));
+            if(enemy->FirstChildElement("properties") != NULL){
+              XMLElement* prop = enemy->FirstChildElement("properties")->FirstChildElement("property");
+              const char* type = prop->Attribute("value");
+              
+              if(strcmp(type, "Stationary") == 0)
+                smallMage->setStationary();
+            }
+            _enemies.push_back(smallMage);
           }
           
           if(strcmp(enemyType, "Headless") == 0){
             _enemies.push_back(new Headless(graphics, Vector2(x,y)));
+          }
+          
+          if(strcmp(enemyType, "FloatFish") == 0){
+            Enemy* floatFish = new FloatFish(graphics, Vector2(x,y));
+            if(enemy->FirstChildElement("properties") != NULL){
+              XMLElement* prop = enemy->FirstChildElement("properties")->FirstChildElement("property");
+              const char* type = prop->Attribute("value");
+              
+              if(strcmp(type, "Stationary") == 0)
+                floatFish->setStationary();
+            }
+            _enemies.push_back(floatFish);
           }
           
           enemy = enemy->NextSiblingElement("object");

@@ -1217,3 +1217,281 @@ void Headless::setupAnimations(){
 
 
 
+FloatFish::FloatFish(){}
+
+FloatFish::FloatFish(Graphics &graphics, Vector2 spawnPoint) : Enemy(graphics, "sprites/fishymonster.png", 1, 1,spawnPoint.x, spawnPoint.y ,32, 64)
+{
+  _spawnPoint = Vector2(spawnPoint);
+  setupAnimations();
+  
+  COLLIDER normal = {.width = (int)(50*_scale), .height = (int)(28*_scale), .offset = Vector2(0,0)};
+  cur_collider = normal;
+  
+  _maxHealth = 3;
+  _currentHealth = _maxHealth;
+  
+  _dy = 0;
+  
+  _tileCollides = false;
+  
+}
+void FloatFish::update(float dt, Player &player){
+  Enemy::update(dt, player);
+  Enemy::setDeathAnim();
+  
+  lifetime += .05;
+  
+  bool playerToTheRight = (player.getCollider().getCenterX() > _collider.getCenterX());
+  bool playerToTheLeft = (player.getCollider().getCenterX() < (_collider.getCenterX()));
+  bool playerBelow = (player.getCollider().getCenterY() > (_collider.getCenterY()));
+  
+  bool threshold =(player.getCollider().getCenterY() > (_collider.getCenterY()-64*SPRITE_SCALE)) && (player.getCollider().getCenterY() < (_collider.getCenterY()+64*SPRITE_SCALE));
+  
+  if (playerToTheRight && _direction < 0)
+    _direction = 1;
+  
+  if (playerToTheLeft && _direction > 0)
+    _direction = -1;
+  
+  _dx = 700*_direction;
+  _dy = (800)*sinf(lifetime);
+  
+  if(_stationary)
+    _dx = 0;
+  
+  if(_actionTimer <= 0){
+    _currentAnimationDone = false;
+    this->playAnimation("Idle");
+  }
+  else{
+    if(_death){
+      _knockBack = false;
+      this->playAnimation("Death", true);
+      this->playDeathSFX(dt);
+      _dx = 0;
+    }
+    
+    if(_knockBack)
+    {
+      this->playAnimation("Hit");
+      //_dx = _knockDirection*_knockBackValue;
+      _dx = 0;
+      _dy = 0;
+      if(_knockBackValue > 0)
+        _knockBackValue -= _knockBackSlow;
+    }
+    
+    _actionTimer -= dt;
+    
+    if(_currentAnimationDone)
+      _actionTimer = 0;
+    
+    if(_actionTimer <= 0 && _knockBack)
+    {
+      _knockBack = false;
+    }
+    
+    if(_actionTimer <= 0 && _death){
+      _dead = true;
+    }
+  }
+  
+  this->setY(this->getY() + _dy*dt);
+  this->setX(this->getX() + _dx*dt);
+}
+void FloatFish::draw (Graphics &graphics){
+  Enemy::draw(graphics);
+}
+void FloatFish::playerCollision(Player* player){
+  player->changeHealth(-1);
+}
+
+void FloatFish::handleRightCollision(Rectangle tile){
+  //Enemy::handleRightCollision(tile);
+}
+
+void FloatFish::handleLeftCollision(Rectangle tile){
+  //Enemy::handleLeftCollision(tile);
+}
+void FloatFish::handleUpCollision(Rectangle tile){
+  //Enemy::handleUpCollision(tile);
+}
+void FloatFish::handleDownCollision(Rectangle tile){
+  //Enemy::handleDownCollision(tile);
+}
+
+void FloatFish::applyGravity(float dt){
+  _dy += (GRAVITY*dt);
+}
+
+void FloatFish::setupAnimations(){
+  this->addAnimation(.03, 4, 0, 0, "Idle", 64, 32, Vector2(0,0),"main");
+  this->addAnimation(.02, 1, 4, 0, "Hit", 64, 32, Vector2(0,0),"main");
+  this->addAnimation(.04, 4, 5, 0, "Death", 64, 32, Vector2(0,0),"main");
+  
+  this->playAnimation("Idle");
+}
+
+
+
+
+
+
+Rat::Rat(){}
+
+Rat::Rat(Graphics &graphics, Vector2 spawnPoint) : Enemy(graphics, "sprites/rat-sheet.png", 1, 1,spawnPoint.x, spawnPoint.y ,32, 64)
+{
+  _spawnPoint = Vector2(spawnPoint);
+  setupAnimations();
+  
+  COLLIDER normal = {.width = (int)(48*_scale), .height = (int)(32*_scale), .offset = Vector2(0,0)};
+  cur_collider = normal;
+  
+  _maxHealth = 15;
+  _currentHealth = _maxHealth;
+  
+}
+void Rat::update(float dt, Player &player){
+  Enemy::update(dt, player);
+  applyGravity(dt);
+  Enemy::setDeathAnim();
+  
+  bool playerToTheRight = (player.getCollider().getCenterX() > (this->getX()+16));
+  bool playerToTheLeft = (player.getCollider().getCenterX() < (this->getX()+16));
+  
+  bool withinStrikeZone =(player.getCollider().getCenterX() > (this->getX()-100*SPRITE_SCALE)) && (player.getCollider().getCenterX() < (this->getX()+100*SPRITE_SCALE));
+  
+  if (playerToTheRight && _direction < 0 && !_attacking && !_wait && !_charging)
+    _direction = 1;
+  
+  if (playerToTheLeft && _direction > 0 && !_attacking && !_wait && !_charging)
+    _direction = -1;
+  
+  
+  if(_actionTimer <= 0 && !_attacking && !_charging && !_wait){
+    _currentAnimationDone = false;
+    this->playAnimation("Walk");
+    
+    _reloadTime -= dt;
+    
+    if(!withinStrikeZone)
+      _dx = 500*_direction;
+    else{
+      _dx = 0;
+      _charging = true;
+      _actionTimer = 0.05;//this->getAnimationTime("Charge");
+    }
+  }
+  else{
+    if(_charging){
+      this->playAnimation("Idle");
+      _dx = 0;
+    }
+    
+    if(_attacking){
+      this->playAnimation("Leap",true);
+      _dx = 1500*_direction;
+    }
+    
+    if(_wait){
+      this->playAnimation("Idle",true);
+      _dx = 0;
+    }
+    
+    if(_knockBack)
+    {
+      _attacking = false;
+      _knockBack = false;
+      _charging = false;
+      _wait = false;
+      _dx = _knockDirection*_knockBackValue;
+      if(_knockBackValue > 0)
+        _knockBackValue -= _knockBackSlow;
+    }
+    if(_death){
+      _attacking = false;
+      _knockBack = false;
+      _charging = false;
+      _wait = false;
+      this->playAnimation("Death", true);
+      this->playDeathSFX(dt);
+      _dx = 0;
+    }
+    
+    _actionTimer -= dt;
+    
+    if(_currentAnimationDone && _death)
+      _actionTimer = 0;
+    
+    if(_actionTimer <= 0 && _death){
+      _dead = true;
+    }
+    
+    if(_actionTimer <= 0 && _knockBack)
+    {
+      _knockBack = false;
+    }
+    
+    if(_actionTimer <= 0 && _attacking){
+      _attacking = false;
+      _wait = true;
+      _actionTimer = 0.05;//this->getAnimationTime("Attack");
+    }
+    
+    if(_actionTimer <= 0 && _charging){
+      _charging = false;
+      _attacking = true;
+      _actionTimer = 0.1;//this->getAnimationTime("Attack");
+      _dy -= 2000;
+    }
+    
+    if(_actionTimer <= 0 && _wait){
+      _wait = false;
+      _actionTimer = 0;
+    }
+  }
+  
+  this->setY(this->getY() + _dy*dt);
+  this->setX(this->getX() + _dx*dt);
+}
+void Rat::draw (Graphics &graphics){
+  Enemy::draw(graphics);
+}
+void Rat::playerCollision(Player* player){
+  player->changeHealth(-1);
+}
+
+void Rat::handleRightCollision(Rectangle tile){
+  Enemy::handleRightCollision(tile);
+}
+
+void Rat::handleLeftCollision(Rectangle tile){
+  Enemy::handleLeftCollision(tile);
+}
+void Rat::handleUpCollision(Rectangle tile){
+  Enemy::handleUpCollision(tile);
+}
+void Rat::handleDownCollision(Rectangle tile){
+  Enemy::handleDownCollision(tile);
+}
+
+void Rat::applyGravity(float dt){
+  _dy += (GRAVITY*dt);
+}
+
+void Rat::setupAnimations(){
+  Vector2 offset = Vector2(0,0);
+  this->addAnimation(.01, 1, 3, 0, "Idle", 64, 32, offset,"main");
+  this->addAnimation(.05, 4, 0, 0, "Walk", 64, 32, offset,"main");
+  this->addAnimation(.01, 1, 2, 0, "Leap", 64, 32, offset,"main");
+  this->addAnimation(.04, 4, 4, 0, "Death", 64, 32, offset,"main");
+  
+  this->playAnimation("Idle");
+}
+
+
+
+
+
+
+

@@ -259,5 +259,56 @@ protected:
   void setupAnimations();
 };
 
+class FloatFish : public Enemy{
+public:
+  FloatFish();
+  FloatFish(Graphics &graphics, Vector2 spawnPoint);
+  void update(float dt, Player &player);
+  void draw(Graphics &graphics);
+  void playerCollision(Player* player);
+  
+  void handleRightCollision(Rectangle tile);
+  void handleLeftCollision(Rectangle tile);
+  void handleUpCollision(Rectangle tile);
+  void handleDownCollision(Rectangle tile);
+  
+  void applyGravity(float dt);
+protected:
+  void setupAnimations();
+  
+  float lifetime = 0;
+  
+  float _reloadTime = .5;
+  float _reloadTimeMax = .5;
+  
+  float _projectileTime = .01;
+  float _projectileTimeMax = .01;
+};
+
+
+class Rat : public Enemy{
+public:
+  Rat();
+  Rat(Graphics &graphics, Vector2 spawnPoint);
+  void update(float dt, Player &player);
+  void draw(Graphics &graphics);
+  void playerCollision(Player* player);
+  
+  void handleRightCollision(Rectangle tile);
+  void handleLeftCollision(Rectangle tile);
+  void handleUpCollision(Rectangle tile);
+  void handleDownCollision(Rectangle tile);
+  
+  void applyGravity(float dt);
+protected:
+  void setupAnimations();
+  
+  float _reloadTime = .5;
+  float _reloadTimeMax = .5;
+  
+  float _projectileTime = .01;
+  float _projectileTimeMax = .01;
+};
+
 
 #endif
