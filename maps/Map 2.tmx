@@ -1087,7 +1087,11 @@
     <property name="Type" value="Stationary"/>
    </properties>
   </object>
-  <object id="55" name="SmallMage" x="392" y="584" width="8" height="16"/>
+  <object id="55" name="SmallMage" x="392" y="584" width="8" height="16">
+   <properties>
+    <property name="Type" value="Stationary"/>
+   </properties>
+  </object>
   <object id="58" name="Walker" x="408" y="704"/>
  </objectgroup>
 </map>

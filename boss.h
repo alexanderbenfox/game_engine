@@ -5,7 +5,7 @@
 class Boss : public Enemy{
 public:
   Boss();
-  Boss(Graphics &graphics, Vector2 spawnPoint);
+  Boss(Graphics &graphics, Vector2 spawnPoint, std::string filePath, Vector2 size);
   void update(float dt, Player &player);
   void draw (Graphics &graphics);
   void playerCollision(Player* player);
@@ -19,14 +19,14 @@ public:
   
 protected:
   void setupAnimations();
-  void moveCurCollider(float x, float y, float width, float height);
+  //void moveCurCollider(float x, float y, float width, float height);
   
 };
 
 class Snake : public Boss{
-  
+public:
   Snake();
-  Snake(Graphics &graphics, Vector2 spawnPoint);
+  Snake(Graphics &graphics, Vector2 spawnPoint, std::string filePath, Vector2 size);
   void update(float dt, Player &player);
   void draw (Graphics &graphics);
   void playerCollision(Player* player);
@@ -41,6 +41,10 @@ class Snake : public Boss{
 protected:
   void setupAnimations();
   void moveCurCollider(float x, float y, float width, float height);
+  void chooseCurrentAttack();
+  
+  void normalCollider();
+  void changeCollider(int x, int y, int width, int height);
   
   void LeapingAttack();
   bool _inLeapingAttack, _jump, _leapAscend, _leapPeak, _fall, _layout, _getup;

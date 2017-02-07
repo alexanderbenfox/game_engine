@@ -1390,7 +1390,7 @@ void Rat::update(float dt, Player &player){
     
     if(_attacking){
       this->playAnimation("Leap",true);
-      _dx = 1500*_direction;
+      _dx = 1000*_direction;
     }
     
     if(_wait){

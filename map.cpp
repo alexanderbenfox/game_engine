@@ -10,6 +10,7 @@
 #include "graphics.h"
 #include "conf.h"
 #include "enemy.h"
+#include "boss.h"
 
 #include "tinyxml2.h"
 
@@ -177,14 +178,14 @@ void Map::draw(Graphics &graphics){
     }
   }
   
-  /*for (Enemy* e : _enemies){
+  for (Enemy* e : _enemies){
     Rectangle c = e->getCollider();
     c.moveAnchor(c.getLeft()-_camera.x, c.getTop() - _camera.y);
     SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getTop(),c.getLeft()+c.getWidth(),c.getTop());
     SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getTop(),c.getLeft(),c.getBottom());
     SDL_RenderDrawLine(graphics.getRenderer(), c.getRight(),c.getTop(),c.getRight(),c.getBottom());
     SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getBottom(),c.getLeft()+c.getWidth(),c.getBottom());
-  }*/
+  }
   
   for(int i = 0; i<_specialTiles.size();i++){
     _specialTiles.at(i)->draw(graphics);
@@ -608,6 +609,10 @@ void Map::LoadObjects(int *mapNode, Graphics &graphics)
                 floatFish->setStationary();
             }
             _enemies.push_back(floatFish);
+          }
+          
+          if(strcmp(enemyType, "SnakeBoss") == 0){
+            _enemies.push_back(new Snake(graphics, Vector2(x,y), "sprites/snakeboss-sheet.png", Vector2(500,350)));
           }
           
           enemy = enemy->NextSiblingElement("object");

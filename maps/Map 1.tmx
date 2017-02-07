@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="40" height="16" tilewidth="32" tileheight="32" nextobjectid="96">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="40" height="16" tilewidth="32" tileheight="32" nextobjectid="99">
  <tileset firstgid="1" name="stage1_tilesheet" tilewidth="32" tileheight="32" tilecount="256">
   <image source="/Users/alex/GithubProjects/game_engine/content/tilesets/stage1_tilesheet.png" width="512" height="512"/>
  </tileset>
@@ -930,7 +930,7 @@
    <tile gid="81"/>
    <tile gid="3"/>
    <tile gid="20"/>
-   <tile gid="81"/>
+   <tile gid="168"/>
    <tile gid="81"/>
    <tile gid="81"/>
    <tile gid="81"/>
@@ -970,7 +970,7 @@
    <tile gid="81"/>
    <tile gid="3"/>
    <tile gid="20"/>
-   <tile gid="81"/>
+   <tile gid="184"/>
    <tile gid="81"/>
    <tile gid="81"/>
    <tile gid="81"/>
@@ -1971,6 +1971,12 @@
     <property name="spawnY" value="32"/>
    </properties>
   </object>
+  <object id="98" name="BossMap" x="32" y="224" width="32" height="64">
+   <properties>
+    <property name="spawnX" value="64"/>
+    <property name="spawnY" value="136"/>
+   </properties>
+  </object>
  </objectgroup>
  <objectgroup name="onewayplatform">
   <object id="36" x="32" y="288" width="64"/>
@@ -1985,6 +1991,8 @@
   <object id="69" name="Spitter" x="936" y="200"/>
   <object id="71" name="Floater" x="360" y="168"/>
   <object id="95" name="Headless" x="280" y="288"/>
+  <object id="96" name="FloatFish" x="1048" y="200"/>
+  <object id="97" name="Rat" x="344" y="312"/>
  </objectgroup>
  <objectgroup name="movingplatform">
   <object id="85" gid="133" x="528" y="232" width="32" height="32"/>
