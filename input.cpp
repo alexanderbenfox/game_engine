@@ -1,10 +1,19 @@
 #include "input.h"
+#include <iostream>
+#include <algorithm>
+#include <iterator>
 
+Input::Input(){
+  for(int i = 0 ; i < 9; i++){
+    oldkeystates[keys[i]] = false;
+  }
+}
 
 //resets keys from last frame
 void Input::beginNewFrame(){
   _pressed_keys.clear();
   _released_keys.clear();
+  _held_keys.clear();
 }
 
 
@@ -28,4 +37,29 @@ bool Input::keyWasReleased(SDL_Scancode key){
 
 bool Input::keyIsHeld(SDL_Scancode key){
   return _held_keys[key];
+}
+
+void Input::updateKeys(const Uint8 *newkeystates){
+  keystates = newkeystates;
+  
+  for(int i = 0; i < 9; i++)
+  {
+    if(keystates[keys[i]] && oldkeystates[keys[i]]){
+      _held_keys[keys[i]] = true;
+    }
+    
+    if(keystates[keys[i]] && !oldkeystates[keys[i]]){
+      _pressed_keys[keys[i]] = true;
+    }
+    
+    if(!keystates[keys[i]] && oldkeystates[keys[i]]){
+      _released_keys[keys[i]] = true;
+    }
+  }
+  
+  for(int i = 0; i < 9; i++)
+  {
+    oldkeystates[keys[i]] = keystates[keys[i]];
+  }
+  
 }

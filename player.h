@@ -9,6 +9,8 @@
 #include "map.h"
 #include "swordhitbox.h"
 
+class Boss;
+
 struct COLLIDER {
   int width;
   int height;
@@ -112,7 +114,7 @@ public:
   
   void reset();
   
-  int _hp = 1;
+  int _hp = 10;
   int _hpMax = 10;
   
   bool touchedMovingPlatform = false;
@@ -129,6 +131,23 @@ public:
   
   Door getNewRoom(){
     return transitionDoor;
+  }
+  
+  void setTrackedBoss(Boss *boss){
+    _trackedBoss = boss;
+    _isTrackingBoss = true;
+  }
+  
+  bool isTrackingBoss(){
+    return _isTrackingBoss;
+  }
+  
+  void bossDied(){
+    _isTrackingBoss = false;
+  }
+  
+  Boss* getTrackedBoss(){
+    return _trackedBoss;
   }
   
 private:
@@ -171,6 +190,9 @@ private:
   float _oldX, _oldY;
   
   CameraOffset offset;
+  
+  Boss *_trackedBoss;
+  bool _isTrackingBoss;
   
 };
 

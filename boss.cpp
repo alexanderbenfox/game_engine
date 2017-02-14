@@ -9,6 +9,8 @@ Boss::Boss(Graphics &graphics, Vector2 spawnPoint, std::string filePath, Vector2
 
 void Boss::update(float dt, Player &player){
   Enemy::update(dt, player);
+  if(_grounded)
+    _triggered = true;
 }
 void Boss::draw (Graphics &graphics){
   Enemy::draw(graphics);
@@ -49,9 +51,15 @@ Snake::Snake(Graphics &graphics, Vector2 spawnPoint, std::string filePath, Vecto
   COLLIDER normal = {.width = (int)(70*_scale), .height = (int)(128*_scale), .offset = Vector2(0,0)};
   cur_collider = normal;
   
+  //_maxHealth = 100;
   _maxHealth = 100;
   _currentHealth = _maxHealth;
   _direction = -1;
+  
+  _triggered = false;
+  _wait = false;
+  
+  this->addSpriteSheet(graphics, "sprites/snakedeath-sheet.png", "death", 500, 350);
   
 }
 
@@ -74,7 +82,7 @@ void Snake::setupAnimations(){
   this->addAnimation(.01, 1, 22, 0, "LeapPeak", 500, 350, offset,"main");
   this->addAnimation(.01, 1, 23, 0, "Fall", 500, 350, offset,"main");
   this->addAnimation(.1, 1, 25, 0, "Layout", 500, 350, offset,"main");
-  this->addAnimation(.05, 5, 26, 0, "GetUp", 500, 350, offset,"main");
+  this->addAnimation(.02, 5, 26, 0, "GetUp", 500, 350, offset,"main");
   
   //Animations for VenomSpitAttack
   this->addAnimation(.05, 4, 0, 0, "Ready", 500, 350, offset,"main");
@@ -83,12 +91,12 @@ void Snake::setupAnimations(){
   
   //Animations for TailStrike
   this->addAnimation(.05, 4, 8, 0, "RaiseTail", 500, 350, offset,"main");
-  this->addAnimation(.05, 4, 12, 0, "WaitForStrike", 500, 350, offset,"main");
+  this->addAnimation(.02, 4, 12, 0, "WaitForStrike", 500, 350, offset,"main");
   this->addAnimation(.05, 1, 16, 0, "Striking", 500, 350, offset,"main");
   
   //Other animations
   this->addAnimation(.01, 1, 18, 0, "Idle", 500, 350, offset,"main");
-  this->addAnimation(.04, 1, 18, 0, "Death", 500, 350, offset,"main");
+  this->addAnimation(.03, 18, 0, 0, "Death", 500, 350, offset,"death");
   
   this->playAnimation("Idle");
   
@@ -123,7 +131,7 @@ void Snake::LeapingAttack(){
     else{
       if(_jump){
         _dy -= 4000;
-        _dx = 1000*_direction;
+        _dx = 700*_direction;
         _jump = false;
         _leapAscend = true;
         this->playAnimation("LeapAscend");
@@ -164,6 +172,9 @@ void Snake::LeapingAttack(){
       else if(_getup){
         _getup = false;
         _inLeapingAttack = false;
+        _wait = true;
+        _actionTimer = _maxWaitTime*((float)_currentHealth/(float)_maxHealth);
+        playAnimation("Idle");
       }
     }
   }
@@ -197,8 +208,23 @@ void Snake::VenomSpitAttack(){
         //create the spit balls here
       }
       else if(_spit){
+        float x = this->getX();
+        if(_direction > 0)
+          x += cur_collider.width;
+        EnemyHitbox projectile1 = EnemyHitbox(*_graphics, "sprites/spittingmonsterproj.png", 0, 0, x, this->getY(), 20, 20, _direction*2000.0, -1800, .2);
+        EnemyHitbox projectile2 = EnemyHitbox(*_graphics, "sprites/spittingmonsterproj.png", 0, 0, x, this->getY(), 20, 20, _direction*1000.0, -1600, .2);
+        EnemyHitbox projectile3 = EnemyHitbox(*_graphics, "sprites/spittingmonsterproj.png", 0, 0, x, this->getY(), 20, 20, _direction*3000.0, -2200, .2);
+        projectile1.setDestroyable();
+        projectile2.setDestroyable();
+        projectile3.setDestroyable();
+        hitboxes.push_back(projectile1);
+        hitboxes.push_back(projectile2);
+        hitboxes.push_back(projectile3);
         _spit = false;
         _inVenomSpitAttack = false;
+        _wait = true;
+        _actionTimer = _maxWaitTime*((float)_currentHealth/(float)_maxHealth);
+        playAnimation("Idle");
       }
     }
   }
@@ -228,12 +254,22 @@ void Snake::TailStrike(){
         _striking = true;
         this->playAnimation("Striking");
         _actionTimer = .2;
+        float x = this->getX();
+        if(_direction > 0)
+          x -= 128;
+        EnemyHitbox projectile = EnemyHitbox(*_graphics, "sprites/snaketail.png", 0, 0, x, this->getY()+cur_collider.height-28*SPRITE_SCALE, 34, 128, _direction*3000.0, 0, .2, true, false, 3);
+        if(_direction < 0)
+          projectile.flipSprite();
+        hitboxes.push_back(projectile);
         
         //create the attacking tail here
       }
       else if(_striking){
         _striking = false;
         _inTailStrike = false;
+        _wait = true;
+        _actionTimer = _maxWaitTime*((float)_currentHealth/(float)_maxHealth);
+        playAnimation("Idle");
       }
     }
   }
@@ -242,7 +278,6 @@ void Snake::TailStrike(){
 void Snake::chooseCurrentAttack(){
   if(!(_inLeapingAttack || _inTailStrike || _inVenomSpitAttack)){
     int rand = random()%3;
-    std::cout<<rand<<std::endl;
     if (rand == 0)
       _inLeapingAttack = true;
     if (rand == 1)
@@ -261,25 +296,52 @@ void Snake::chooseCurrentAttack(){
 }
 
 void Snake::update(float dt, Player &player){
-  Enemy::update(dt, player);
+  Boss::update(dt, player);
   applyGravity(dt);
   Enemy::setDeathAnim();
   
   bool playerToTheRight = (player.getCollider().getCenterX() > (this->getX()+16));
   bool playerToTheLeft = (player.getCollider().getCenterX() < (this->getX()+16));
   
-  if(!_inLeapingAttack){
-    if(playerToTheRight)
-      _direction = 1;
-    if(playerToTheLeft)
-      _direction = -1;
+  
+  if(_triggered){
+    if(!_inLeapingAttack){
+      if(playerToTheRight)
+        _direction = 1;
+      if(playerToTheLeft)
+        _direction = -1;
+    }
+    
+    bool withinZone = getWithinStrikeZone(player, 64);
+    
+    if(_death){
+      normalCollider();
+      resetAttackBools();
+      _inLeapingAttack = false;
+      _inTailStrike = false;
+      _inVenomSpitAttack = false;
+      //this->playAnimation("Death");
+      this->playAnimation("Death", true);
+      this->playDeathSFX(dt);
+      _dx = 0;
+      _dy = 0;
+      if(_currentAnimationDone)
+        _actionTimer = 0;
+      if(_actionTimer <= 0 && _death){
+        _dead = true;
+      }
+    }
+    else{
+      _currentAnimationDone = false;
+      if(!_wait)
+        this->chooseCurrentAttack();
+    }
+    
+    if(_wait && _actionTimer <= 0)
+      _wait = false;
+    
+    _actionTimer -= dt;
   }
-  
-  bool withinZone = getWithinStrikeZone(player, 64);
-  
-  this->chooseCurrentAttack();
-  
-  _actionTimer -= dt;
   
   this->setY(this->getY() + _dy*dt);
   this->setX(this->getX() + _dx*dt);
@@ -293,14 +355,17 @@ void Snake::playerCollision(Player* player){
 }
 
 void Snake::handleRightCollision(Rectangle tile){
-  Enemy::handleRightCollision(tile);
+  if(!_inLeapingAttack)
+    Enemy::handleRightCollision(tile);
 }
 
 void Snake::handleLeftCollision(Rectangle tile){
-  Enemy::handleLeftCollision(tile);
+  if(!_inLeapingAttack)
+    Enemy::handleLeftCollision(tile);
 }
 void Snake::handleUpCollision(Rectangle tile){
-  Enemy::handleUpCollision(tile);
+  if(!_inLeapingAttack)
+    Enemy::handleUpCollision(tile);
 }
 void Snake::handleDownCollision(Rectangle tile){
   Enemy::handleDownCollision(tile);

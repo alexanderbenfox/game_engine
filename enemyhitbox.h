@@ -22,6 +22,13 @@ public:
     (hitbox.getTop()) <= other.getBottom();
   }
   
+  void flipSprite(){
+    if(_isAnimated)
+      animSprite.setFlipped(true);
+    else
+      sprite.setFlipped(true);
+  }
+  
   void applyGravity(float dt){
     _dy += (GRAVITY*dt);
   }
@@ -32,6 +39,9 @@ public:
   void collidePlayer(Player &player);
   
   bool finished = false;
+  void setDestroyable();
+  bool isDestroyable();
+  void Destroy();
   
 private:
   int length;
@@ -42,6 +52,7 @@ private:
   bool _gravity = true;
   
   float _lifetime;
+  bool _destroyable;
   
 };
 

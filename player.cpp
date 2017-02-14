@@ -9,6 +9,7 @@ Player::Player(Graphics &graphics, const std::string &filePath, int startX, int 
 {
   srand(time(NULL));
   _dy = 0;
+  _isTrackingBoss = false;
   
   hud = HUD(graphics);
   sfx = SFXManager(graphics);

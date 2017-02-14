@@ -155,6 +155,25 @@ void Map::update(float elapsedTime, Player &player){
       _enemies.erase(_enemies.begin() + i);
     }
   }
+  
+  for (int i = 0; i < _bosses.size(); i++){
+    handleEnemyCollisions(_bosses.at(i));
+    _bosses.at(i)->update(elapsedTime, player);
+    if(_bosses.at(i)->getHitTrigger()){
+      _hitTrigger = true;
+      if(_bosses.at(i)->isPlayingDeathAnimation()){
+        _deathTrigger = true;
+      }
+    }
+    if(_bosses.at(i)->isDead()){
+      player.bossDied();
+      delete _bosses.at(i);
+      _bosses.erase(_bosses.begin() + i);
+    }
+    else{
+      player.setTrackedBoss(_bosses.at(i));
+    }
+  }
 }
 
 void Map::draw(Graphics &graphics){
@@ -168,24 +187,28 @@ void Map::draw(Graphics &graphics){
   
   for (int i = 0; i < _enemies.size(); i++){
     _enemies.at(i)->draw(graphics);
-    for(int j = 0; j< _enemies.at(i)->hitboxes.size() ;j++){
+    /*for(int j = 0; j< _enemies.at(i)->hitboxes.size() ;j++){
       Rectangle c = _enemies.at(i)->hitboxes.at(j).hitbox;
       c.moveAnchor(c.getLeft()-_camera.x, c.getTop() - _camera.y);
       SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getTop(),c.getLeft()+c.getWidth(),c.getTop());
       SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getTop(),c.getLeft(),c.getBottom());
       SDL_RenderDrawLine(graphics.getRenderer(), c.getRight(),c.getTop(),c.getRight(),c.getBottom());
       SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getBottom(),c.getLeft()+c.getWidth(),c.getBottom());
-    }
+    }*/
   }
   
-  for (Enemy* e : _enemies){
+  for (int i = 0; i<_bosses.size(); i++){
+    _bosses.at(i)->draw(graphics);
+  }
+  
+  /*for (Enemy* e : _enemies){
     Rectangle c = e->getCollider();
     c.moveAnchor(c.getLeft()-_camera.x, c.getTop() - _camera.y);
     SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getTop(),c.getLeft()+c.getWidth(),c.getTop());
     SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getTop(),c.getLeft(),c.getBottom());
     SDL_RenderDrawLine(graphics.getRenderer(), c.getRight(),c.getTop(),c.getRight(),c.getBottom());
     SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getBottom(),c.getLeft()+c.getWidth(),c.getBottom());
-  }
+  }*/
   
   for(int i = 0; i<_specialTiles.size();i++){
     _specialTiles.at(i)->draw(graphics);
@@ -580,7 +603,15 @@ void Map::LoadObjects(int *mapNode, Graphics &graphics)
           }
           
           if(strcmp(enemyType, "Rat") == 0){
-            _enemies.push_back(new Rat(graphics, Vector2(x,y)));
+            Enemy* rat = new Rat(graphics, Vector2(x,y));
+            if(enemy->FirstChildElement("properties") != NULL){
+              XMLElement* prop = enemy->FirstChildElement("properties")->FirstChildElement("property");
+              const char* type = prop->Attribute("value");
+              
+              if(strcmp(type, "Stationary") == 0)
+                rat->setStationary();
+            }
+            _enemies.push_back(rat);
           }
           
           if(strcmp(enemyType, "SmallMage") == 0){
@@ -612,7 +643,7 @@ void Map::LoadObjects(int *mapNode, Graphics &graphics)
           }
           
           if(strcmp(enemyType, "SnakeBoss") == 0){
-            _enemies.push_back(new Snake(graphics, Vector2(x,y), "sprites/snakeboss-sheet.png", Vector2(500,350)));
+            _bosses.push_back(new Snake(graphics, Vector2(x,y), "sprites/snakeboss-sheet.png", Vector2(500,350)));
           }
           
           enemy = enemy->NextSiblingElement("object");
@@ -689,8 +720,40 @@ std::vector<Enemy*> Map::checkEnemyHitboxCollisions(const Rectangle &other){
         overlaps.push_back(_enemies.at(i));
     }
   }
+  
+  for(int i = 0; i< _bosses.size(); i++)
+  {
+    for(int j = 0; j < _bosses.at(i)->hitboxes.size(); j++){
+      if(_bosses.at(i)->hitboxes.at(j).collidesWith(other))
+        overlaps.push_back(_bosses.at(i));
+    }
+  }
   return overlaps;
 }
+
+std::vector<EnemyHitbox*> Map::checkEnemyHitboxForDestruction(const Rectangle &other){
+  std::vector<EnemyHitbox*> overlaps;
+  for(int i = 0; i< _enemies.size(); i++)
+  {
+    for(int j = 0; j < _enemies.at(i)->hitboxes.size(); j++){
+      EnemyHitbox* hb = &_enemies.at(i)->hitboxes.at(j);
+      if(hb->collidesWith(other) && hb->isDestroyable())
+        overlaps.push_back(hb);
+    }
+  }
+  
+  for(int i = 0; i< _bosses.size(); i++)
+  {
+    for(int j = 0; j < _bosses.at(i)->hitboxes.size(); j++){
+      EnemyHitbox* hb = &_bosses.at(i)->hitboxes.at(j);
+      if(hb->collidesWith(other) && hb->isDestroyable())
+        overlaps.push_back(hb);
+    }
+  }
+  return overlaps;
+}
+
+
 
 std::vector<Enemy*> Map::checkEnemyCollisions(const Rectangle &other){
   std::vector<Enemy*> overlaps;
@@ -699,6 +762,13 @@ std::vector<Enemy*> Map::checkEnemyCollisions(const Rectangle &other){
     if(_enemies.at(i)->collidesWith(other))
     {
       overlaps.push_back(_enemies.at(i));
+    }
+  }
+  for(int i = 0; i< _bosses.size(); i++)
+  {
+    if(_bosses.at(i)->collidesWith(other))
+    {
+      overlaps.push_back(_bosses.at(i));
     }
   }
   return overlaps;

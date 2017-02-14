@@ -38,6 +38,7 @@ protected:
   bool _hitEnemy = false;
   
   SFXManager sfx;
+  bool _useless = false;
   
 };
 

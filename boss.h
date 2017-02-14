@@ -16,10 +16,18 @@ public:
   void handleDownCollision(Rectangle tile);
   
   void applyGravity(float dt);
+  void knockBack(float direction, bool strong = false){};
   
 protected:
   void setupAnimations();
   //void moveCurCollider(float x, float y, float width, float height);
+  
+  bool _triggered;
+  float _maxWaitTime = 0.2;
+  float _waitTime;
+  bool _wait;
+  
+private:
   
 };
 

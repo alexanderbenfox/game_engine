@@ -18,10 +18,12 @@ EnemyHitbox::EnemyHitbox(Graphics &graphics, const std::string &filePath, int st
       sprite = Sprite(graphics, filePath, startX, startY, posX, posY, width, height);
     }
     else{
-      animSprite = AnimatedSprite(graphics, filePath, startX, startY, std::ceil(posX), std::ceil(posY), width, height);
+      animSprite = AnimatedSprite(graphics, filePath, startX, startY, std::ceil(posX), std::ceil(posY), height, width);
       animSprite._spriteScale = 2;
       animSprite.addAnimation(.02, length, 0, 0, "Anim", width, height, Vector2(0,0), "main");
       animSprite.playAnimation("Anim");
+      width*=2;
+      height*=2;
     }
   }
   
@@ -68,5 +70,17 @@ void EnemyHitbox::draw(Graphics &graphics){
 
 void EnemyHitbox::collidePlayer(Player &player){
   player.takeDamage(1);
+  finished = true;
+}
+
+void EnemyHitbox::setDestroyable(){
+  _destroyable = true;
+}
+
+bool EnemyHitbox::isDestroyable(){
+  return _destroyable;
+}
+
+void EnemyHitbox::Destroy(){
   finished = true;
 }

@@ -157,7 +157,10 @@ void GameLoop::loop() {
   Input input;
   SDL_Event event;
   SDL_Rect camera;
-  this->map = Map("Map 1",graphics);
+  camera.w = WINDOW_WIDTH;
+  camera.h = WINDOW_HEIGHT;
+  
+  this->map = Map("Map 1-1",graphics);
   Vector2 spawnPoint = map.getPlayerSpawnPoint();
   this->player = Player(graphics, "sprites/playerspritesheett.png",1 ,1, spawnPoint.x-32, spawnPoint.y - 60, 64, 32);
   player.playAnimation("Idle");
@@ -186,7 +189,7 @@ void GameLoop::loop() {
     frames++;
     fps.start();
     input.beginNewFrame();
-    if (SDL_PollEvent(&event)) {
+    /*if (SDL_PollEvent(&event)) {
       if (event.type == SDL_KEYDOWN) {
         if (event.key.repeat == 0) {
           input.keyDownEvent(event);
@@ -195,7 +198,7 @@ void GameLoop::loop() {
       else if (event.type == SDL_KEYUP) {
         input.keyUpEvent(event);
       }
-    }
+    }*/
     
     Uint32 dt = clock.now() - previous_time;
     previous_time = clock.now();
@@ -208,7 +211,12 @@ void GameLoop::loop() {
     float y = 0;
     bool crouching = false;
     
+    
+    
     const Uint8 *keystates = SDL_GetKeyboardState(NULL);
+    input.updateKeys(keystates);
+    
+    
     if (input.keyWasPressed(SDL_SCANCODE_A))
     {
       if (keystates[SDL_SCANCODE_DOWN]){

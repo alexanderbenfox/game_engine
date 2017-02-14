@@ -21,6 +21,7 @@
 #include <vector>
 
 class Enemy;
+class Boss;
 class Player;
 class EnemyHitbox;
 
@@ -40,6 +41,7 @@ public:
   std::vector<Door> checkDoorCollisions(const Rectangle &other);
   std::vector<Enemy*> checkEnemyCollisions(const Rectangle &other);
   std::vector<Enemy*> checkEnemyHitboxCollisions(const Rectangle &other);
+  std::vector<EnemyHitbox*> checkEnemyHitboxForDestruction(const Rectangle &other);
   
   const Vector2 getPlayerSpawnPoint() const;
   void setCamera(SDL_Rect *camera);
@@ -79,6 +81,7 @@ protected:
   //enemies, npcs, etc. will go here
   
   std::vector<Enemy*> _enemies;
+  std::vector<Boss*> _bosses;
   
   void handleEnemyCollisions(Enemy* enemy);
   

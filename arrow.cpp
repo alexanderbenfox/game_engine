@@ -84,29 +84,33 @@ void Arrow::draw(Graphics &graphics){
 }
 
 void Arrow::handleCollisions(Map &map){
-  std::vector<Rectangle> tiles = map.checkTileCollisions(_collider);
-  for (Rectangle tile : tiles){
-    collision_sides::Side side = Sprite::getCollisionSide(tile);
-    if (side != collision_sides::NONE){
-      switch(side){
-        case(collision_sides::RIGHT) :
-          _dx = (_dx > 0) ? 0 : _dx;
-          this->setX(tile.getLeft() - _collider.getWidth()-2);
-          //done = true;
-          _lifetime = 2.0;
-          _stuck.setX(this->getX()+50);
-          _stuck.setY(this->getY());
-          sfx.addSFX(arrow_blast, this->getX()+50, this->getCollider().getCenterY()-32);
-          break;
-        case(collision_sides::LEFT) :
-          _dx = (_dx < 0) ? 0 : _dx;
-          this->setX(tile.getRight()-1 + 2);
-          //done = true;
-          _lifetime = 2.0;
-          _stuck.setX(this->getX());
-          _stuck.setY(this->getY());
-          sfx.addSFX(arrow_blast, this->getX() -32, this->getCollider().getCenterY()-32);
-          break;
+  if(!done && !_useless){
+    std::vector<Rectangle> tiles = map.checkTileCollisions(_collider);
+    for (Rectangle tile : tiles){
+      collision_sides::Side side = Sprite::getCollisionSide(tile);
+      if (side != collision_sides::NONE){
+        switch(side){
+          case(collision_sides::RIGHT) :
+            _dx = (_dx > 0) ? 0 : _dx;
+            this->setX(tile.getLeft() - _collider.getWidth()-2);
+            //done = true;
+            _useless = true;
+            _lifetime = 2.0;
+            _stuck.setX(this->getX()+50);
+            _stuck.setY(this->getY());
+            sfx.addSFX(arrow_blast, this->getX()+50, this->getCollider().getCenterY()-32);
+            break;
+          case(collision_sides::LEFT) :
+            _dx = (_dx < 0) ? 0 : _dx;
+            this->setX(tile.getRight()-1 + 2);
+            //done = true;
+            _useless = true;
+            _lifetime = 2.0;
+            _stuck.setX(this->getX());
+            _stuck.setY(this->getY());
+            sfx.addSFX(arrow_blast, this->getX() -32, this->getCollider().getCenterY()-32);
+            break;
+        }
       }
     }
   }
@@ -114,7 +118,7 @@ void Arrow::handleCollisions(Map &map){
 }
 
 void Arrow::handleEnemyCollisions(Map &map){
-  if(!_hitEnemy){
+  if(!_hitEnemy && !done && !_useless){
     std::vector<Enemy*> enemies = map.checkEnemyCollisions(_collider);
     std::vector<Rectangle> tiles;
     for(Enemy* enemy : enemies){
@@ -136,6 +140,7 @@ void Arrow::handleEnemyCollisions(Map &map){
             this->setX(tile.getLeft() - _collider.getWidth()-2);
             _lifetime = 2.0;
             _hitEnemy = true;
+            _useless = true;
             if(_dx > 0)
               sfx.addSFX(splatter, tile.getCenterX()-64 + 10, this->getCollider().getCenterY()-64, false);
             else
@@ -146,6 +151,7 @@ void Arrow::handleEnemyCollisions(Map &map){
             this->setX(tile.getRight()-1 + 2);
             _lifetime = 2.0;
             _hitEnemy = true;
+            _useless = true;
             if(_dx > 0)
               sfx.addSFX(splatter, tile.getCenterX()-64 + 10, this->getCollider().getCenterY()-64, false);
             else

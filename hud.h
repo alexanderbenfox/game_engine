@@ -30,6 +30,22 @@ struct HealthBar : Component{
   }
 };
 
+struct BossHealthBar : Component{
+  int max;
+  int current;
+  Sprite cover;
+  bool isTrackingBoss;
+  
+  void update(float dt, Player* player);
+  
+  void draw(Graphics &graphics){
+    if(isTrackingBoss){
+      graphic.drawBar(graphics, posX, posY, max, current);
+      cover.draw(graphics,posX,posY);
+    }
+  }
+};
+
 class HUD{
 public:
   HUD();
@@ -41,6 +57,7 @@ public:
 private:
   std::vector<Component> _components;
   HealthBar _healthBar;
+  BossHealthBar _bossHealthBar;
 };
 
 #endif

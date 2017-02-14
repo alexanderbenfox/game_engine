@@ -32,7 +32,7 @@ public:
   
   void playDeathSFX(float dt);
   
-  void knockBack(float direction, bool strong = false);
+  virtual void knockBack(float direction, bool strong = false);
   
   const bool collidesWith(const Rectangle &other) const {
     return
@@ -67,6 +67,9 @@ public:
   
   bool getHitTrigger();
   
+  int _maxHealth;
+  int _currentHealth;
+  
   
 protected:
   Graphics* _graphics;
@@ -75,8 +78,6 @@ protected:
   float _currTime = 0;
   
   int _direction;
-  int _maxHealth;
-  int _currentHealth;
   
   float _actionTimer;
   
@@ -99,6 +100,7 @@ protected:
   
   bool _charging, _wait;
   bool _shieldUp = false;
+  bool _triggered = false;
 };
 
 class Walker : public Enemy{

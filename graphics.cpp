@@ -67,11 +67,26 @@ SDL_Surface* Graphics::loadImage(const std::string &spriteSheetFilePath){
   return this-> _spriteSheets[spriteSheetFilePath];
 }
 
+
+
 void Graphics::blitSurface(SDL_Rect* srcRect, SDL_Rect* destRect, SDL_Texture* srcTexture, double angle, const SDL_Point* point, const SDL_RendererFlip flip){
+  int destRight = (destRect->x + destRect->w);
+  int destLeft = destRect->x;
+  int destTop = destRect->y;
+  int destBottom = destRect->y + destRect->h;
+  
   destRect->x -= _camera.x;
   destRect->y -= _camera.y;
-  //std::cout<<_camera.x<<std::endl;
-  SDL_RenderCopyEx(_renderer, srcTexture, srcRect, destRect, angle, point, flip);
+  
+  bool isInCameraRange =
+  destRight >= _camera.x &&
+  destLeft<= (_camera.x + _camera.w) &&
+  destBottom >= _camera.y &&
+  destTop <= (_camera.y + _camera.h);
+  
+  //if(destRect->x >= _camera.x && destRect->x <=)
+  if(isInCameraRange)
+    SDL_RenderCopyEx(_renderer, srcTexture, srcRect, destRect, angle, point, flip);
 }
 
 void Graphics::blitSurfaceIgnoreCamera(SDL_Rect* srcRect, SDL_Rect* destRect, SDL_Texture* srcTexture, double angle, const SDL_Point* point, const SDL_RendererFlip flip){
@@ -87,6 +102,8 @@ void Graphics::fillScreen(SDL_Color color){
 void Graphics::setCamera(SDL_Rect *camera){
   _camera.x = camera->x;
   _camera.y = camera->y;
+  _camera.w = camera->w;
+  _camera.h = camera->h;
 }
 
 SDL_Rect Graphics::getCamera(){

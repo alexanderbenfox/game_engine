@@ -12,7 +12,7 @@ Enemy::Enemy(Graphics &graphics, const std::string &filePath, int startX, int st
   _death = false;
   _knockBack = false;
   _actionTimer = 0;
-  _knockBackSlow = 10;
+  _knockBackSlow = 13;
   
   _scale = 2;
   _spriteScale = 2;
@@ -439,6 +439,7 @@ void Spitter::update(float dt, Player &player){
       x_vect/=mag;
       y_vect/=mag;
       EnemyHitbox projectile = EnemyHitbox(*_graphics, "sprites/spittingmonsterproj.png", 0, 0, _collider.getCenterX(), this->getY(), 32, 32, x_vect*1700.0, y_vect*1700.0, .2, false, false);
+      projectile.setDestroyable();
       hitboxes.push_back(projectile);
       _attacking = false;
     }
@@ -560,6 +561,7 @@ void SmallSpitter::update(float dt, Player &player){
     
     if(_knockBack)
     {
+      
       _dx = _knockDirection*_knockBackValue;
       if(_knockBackValue > 0)
         _knockBackValue -= _knockBackSlow;
@@ -577,6 +579,7 @@ void SmallSpitter::update(float dt, Player &player){
     
     if(_actionTimer <= 0 && _attacking){
       EnemyHitbox projectile = EnemyHitbox(*_graphics, "sprites/spittingmonsterproj.png", 0, 0, this->getX(), this->getY(), 32, 32, _direction*1900.0, -1000, .15);
+      projectile.setDestroyable();
       hitboxes.push_back(projectile);
       _attacking = false;
     }
@@ -636,7 +639,7 @@ Floater::Floater(Graphics &graphics, Vector2 spawnPoint) : Enemy(graphics, "spri
   COLLIDER normal = {.width = (int)(38*_scale), .height = (int)(38*_scale), .offset = Vector2(0,0)};
   cur_collider = normal;
   
-  _maxHealth = 5;
+  _maxHealth = 2;
   _currentHealth = _maxHealth;
   
   _dy = 0;
@@ -671,8 +674,8 @@ void Floater::update(float dt, Player &player){
   if(_dy < -6000)
     below = 1;
   
-  _dx += 10*_direction;
-  _dy += 10*below;
+  _dx += 5*_direction;
+  _dy += 5*below;
   
   if(_actionTimer <= 0){
     _currentAnimationDone = false;
@@ -781,19 +784,31 @@ void SwordMan::update(float dt, Player &player){
   if (playerToTheLeft && _direction > 0 && !_attacking && !_wait && !_charging)
     _direction = -1;
   
+  if(_stationary){
+    if(withinStrikeZone){
+      _triggered = true;
+    }
+  }
+  else{
+    _triggered = true;
+  }
   
   if(_actionTimer <= 0 && !_attacking && !_charging && !_wait){
     _currentAnimationDone = false;
-    this->playAnimation("Walk");
     
-    _reloadTime -= dt;
-    
-    if(!withinStrikeZone)
-      _dx = 500*_direction;
-    else{
-      _dx = 0;
-      _charging = true;
-      _actionTimer = 0.2;//this->getAnimationTime("Charge");
+    if(_triggered)
+    {
+      this->playAnimation("Walk");
+      
+      _reloadTime -= dt;
+      
+      if(!withinStrikeZone)
+        _dx = 500*_direction;
+      else{
+        _dx = 0;
+        _charging = true;
+        _actionTimer = 0.2;//this->getAnimationTime("Charge");
+    }
     }
   }
   else{
@@ -815,9 +830,9 @@ void SwordMan::update(float dt, Player &player){
     if(_knockBack)
     {
       _attacking = false;
-      _knockBack = false;
       _charging = false;
       _wait = false;
+      this->playAnimation("Idle");
       _dx = _knockDirection*_knockBackValue;
       if(_knockBackValue > 0)
         _knockBackValue -= _knockBackSlow;
@@ -1003,6 +1018,7 @@ void SmallMage::update(float dt, Player &player){
     if(_actionTimer <= 0 && _attacking){
       _sfx.endSFX(CHARGE1);
       EnemyHitbox projectile = EnemyHitbox(*_graphics, "sprites/mag-proj.png", 0, 0, this->getX(), this->getY(), 16, 16, _direction*2000.0, 0, .15,true, false,3);
+      projectile.setDestroyable();
       hitboxes.push_back(projectile);
       _attacking = false;
     }
@@ -1227,7 +1243,7 @@ FloatFish::FloatFish(Graphics &graphics, Vector2 spawnPoint) : Enemy(graphics, "
   COLLIDER normal = {.width = (int)(50*_scale), .height = (int)(28*_scale), .offset = Vector2(0,0)};
   cur_collider = normal;
   
-  _maxHealth = 3;
+  _maxHealth = 1;
   _currentHealth = _maxHealth;
   
   _dy = 0;
@@ -1253,8 +1269,13 @@ void FloatFish::update(float dt, Player &player){
   if (playerToTheLeft && _direction > 0)
     _direction = -1;
   
-  _dx = 700*_direction;
-  _dy = (800)*sinf(lifetime);
+  if(threshold)
+    _triggered = true;
+  
+  if(_triggered){
+    _dx = 700*_direction;
+    _dy = (800)*sinf(lifetime);
+  }
   
   if(_stationary)
     _dx = 0;
@@ -1347,7 +1368,7 @@ Rat::Rat(Graphics &graphics, Vector2 spawnPoint) : Enemy(graphics, "sprites/rat-
   COLLIDER normal = {.width = (int)(48*_scale), .height = (int)(32*_scale), .offset = Vector2(0,0)};
   cur_collider = normal;
   
-  _maxHealth = 15;
+  _maxHealth = 5;
   _currentHealth = _maxHealth;
   
 }
@@ -1361,25 +1382,39 @@ void Rat::update(float dt, Player &player){
   
   bool withinStrikeZone =(player.getCollider().getCenterX() > (this->getX()-100*SPRITE_SCALE)) && (player.getCollider().getCenterX() < (this->getX()+100*SPRITE_SCALE));
   
+  bool withinStrikeZone2 =(player.getCollider().getCenterX() > (this->getX()-100*SPRITE_SCALE)) && (player.getCollider().getCenterX() < (this->getX()+100*SPRITE_SCALE));
+  
   if (playerToTheRight && _direction < 0 && !_attacking && !_wait && !_charging)
     _direction = 1;
   
   if (playerToTheLeft && _direction > 0 && !_attacking && !_wait && !_charging)
     _direction = -1;
   
+  if(_stationary){
+    if(withinStrikeZone){
+      _triggered = true;
+    }
+  }
+  else{
+    _triggered = true;
+  }
+  
   
   if(_actionTimer <= 0 && !_attacking && !_charging && !_wait){
     _currentAnimationDone = false;
     this->playAnimation("Walk");
     
-    _reloadTime -= dt;
+    if(_triggered){
     
-    if(!withinStrikeZone)
-      _dx = 500*_direction;
-    else{
-      _dx = 0;
-      _charging = true;
-      _actionTimer = 0.05;//this->getAnimationTime("Charge");
+      _reloadTime -= dt;
+      
+      if(!withinStrikeZone)
+        _dx = 500*_direction;
+      else{
+        _dx = 0;
+        _charging = true;
+        _actionTimer = 0.05;//this->getAnimationTime("Charge");
+      }
     }
   }
   else{
@@ -1400,8 +1435,10 @@ void Rat::update(float dt, Player &player){
     
     if(_knockBack)
     {
+      if(_attacking || _wait){
+        _currentAnimationDone = false;
+      }
       _attacking = false;
-      _knockBack = false;
       _charging = false;
       _wait = false;
       _dx = _knockDirection*_knockBackValue;

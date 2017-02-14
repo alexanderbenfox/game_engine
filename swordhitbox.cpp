@@ -124,6 +124,10 @@ void SwordHitbox::handleEnemyCollisions(Map &map){
       if(!isDamagable){
       }
     }
+    std::vector<EnemyHitbox*> hbs = map.checkEnemyHitboxForDestruction(_currentHitbox.rect);
+    for(int i = 0; i < hbs.size(); i++){
+      hbs.at(i)->Destroy();
+    }
   }
 }
 
