@@ -1968,10 +1968,10 @@
   </object>
  </objectgroup>
  <objectgroup name="doors">
-  <object id="88" name="Map 7" x="1216" y="192" width="32" height="64">
+  <object id="88" name="Map 4-1" x="1216" y="192" width="32" height="64">
    <properties>
     <property name="spawnX" value="32"/>
-    <property name="spawnY" value="256.00"/>
+    <property name="spawnY" value="768"/>
    </properties>
   </object>
   <object id="98" name="Map 3" x="32" y="320" width="32" height="64">

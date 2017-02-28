@@ -22,6 +22,7 @@ public:
   virtual void handleLeftCollision(Rectangle tile);
   virtual void handleUpCollision(Rectangle tile);
   virtual void handleDownCollision(Rectangle tile);
+  virtual void collidePlayer(Player* player);
   
   void handleSlopeCollisions(std::vector<Slope> slopes, bool otherCollision);
   
@@ -44,16 +45,15 @@ public:
   
   const Rectangle getCollider() const{
     return Rectangle(this->getX(), this->getY(), this->getColliderWidth(), this->getColliderHeight());
-    
   }
   
   const int getColliderWidth() const {return cur_collider.width;}
   const int getColliderHeight() const {return cur_collider.height;}
-  
-  void collidePlayer(Player* player);
   bool isInCameraRange(SDL_Rect* camera);
   bool getWithinStrikeZone(Player player, float radius);
   bool IsDamagable(float centerX);
+  
+  bool cannotBeDamaged;
   
   
   COLLIDER cur_collider;
@@ -70,8 +70,11 @@ public:
   int _maxHealth;
   int _currentHealth;
   
+  void dropGold(Map *map);
+  
   
 protected:
+  int _damage;
   Graphics* _graphics;
   SFXManager _sfx;
   float _freq = 0.01;
@@ -101,6 +104,8 @@ protected:
   bool _charging, _wait;
   bool _shieldUp = false;
   bool _triggered = false;
+  
+  int goldDrop = 20;
 };
 
 class Walker : public Enemy{
@@ -310,6 +315,65 @@ protected:
   
   float _projectileTime = .01;
   float _projectileTimeMax = .01;
+};
+
+class Fodder : public Enemy{
+public:
+  Fodder();
+  Fodder(Graphics &graphics, Vector2 spawnPoint);
+  void update(float dt, Player &player);
+  void draw (Graphics &graphics);
+  void playerCollision(Player* player);
+  
+  void handleRightCollision(Rectangle tile);
+  void handleLeftCollision(Rectangle tile);
+  void handleUpCollision(Rectangle tile);
+  void handleDownCollision(Rectangle tile);
+  
+  void applyGravity(float dt);
+  
+protected:
+  void setupAnimations();
+};
+
+class SpikeHazard : public Enemy{
+public:
+  SpikeHazard();
+  SpikeHazard(Graphics &graphics, Vector2 spawnPoint);
+  void update(float dt, Player &player);
+  void draw (Graphics &graphics);
+  void playerCollision(Player* player);
+  
+  void handleRightCollision(Rectangle tile);
+  void handleLeftCollision(Rectangle tile);
+  void handleUpCollision(Rectangle tile);
+  void handleDownCollision(Rectangle tile);
+  
+  void applyGravity(float dt);
+  bool facingRight, facingLeft, facingUp, facingDown;
+  
+protected:
+  void setupAnimations();
+};
+
+class FireballHazard : public Enemy{
+public:
+  FireballHazard();
+  FireballHazard(Graphics &graphics, Vector2 spawnPoint);
+  void update(float dt, Player &player);
+  void draw (Graphics &graphics);
+  void playerCollision(Player* player);
+  
+  void handleRightCollision(Rectangle tile);
+  void handleLeftCollision(Rectangle tile);
+  void handleUpCollision(Rectangle tile);
+  void handleDownCollision(Rectangle tile);
+  
+  void applyGravity(float dt);
+  bool facingRight, facingLeft, facingUp, facingDown;
+  
+protected:
+  void setupAnimations();
 };
 
 

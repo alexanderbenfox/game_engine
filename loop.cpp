@@ -160,11 +160,12 @@ void GameLoop::loop() {
   camera.w = WINDOW_WIDTH;
   camera.h = WINDOW_HEIGHT;
   
-  this->map = Map("Map 1-1",graphics);
+  this->map = Map("Map 7",graphics);
   Vector2 spawnPoint = map.getPlayerSpawnPoint();
   this->player = Player(graphics, "sprites/playerspritesheett.png",1 ,1, spawnPoint.x-32, spawnPoint.y - 60, 64, 32);
   player.playAnimation("Idle");
-  player.setCamera(&camera, map, true);
+  player.setCamera(&camera, map.getSize(), true);
+  player.changeRevivalPoint("Map 1-1", spawnPoint);
   int pauseTime = 0;
   
   //graphics.setCamera(&player.camera.screen);
@@ -189,16 +190,6 @@ void GameLoop::loop() {
     frames++;
     fps.start();
     input.beginNewFrame();
-    /*if (SDL_PollEvent(&event)) {
-      if (event.type == SDL_KEYDOWN) {
-        if (event.key.repeat == 0) {
-          input.keyDownEvent(event);
-        }
-      }
-      else if (event.type == SDL_KEYUP) {
-        input.keyUpEvent(event);
-      }
-    }*/
     
     Uint32 dt = clock.now() - previous_time;
     previous_time = clock.now();
@@ -258,7 +249,11 @@ void GameLoop::loop() {
     }
     
     if(input.keyWasPressed(SDL_SCANCODE_RETURN)){
-      player.reset();
+      player.reset(this->map);
+    }
+    
+    if(input.keyWasPressed(SDL_SCANCODE_W)){
+      player.useItem();
     }
     
     //std::cout<<dt<<std::endl;
@@ -289,10 +284,11 @@ void GameLoop::loop() {
           //transition to another room
           if (player.handleDoorCollisions(map) && input.keyWasPressed(SDL_SCANCODE_UP)){
             Door newRoom = player.getNewRoom();
+            this->map.deleteMap();
             this->map = Map(newRoom.getDestination(),graphics);
             player.setX(newRoom.getSpawn().x);
             player.setY(newRoom.getSpawn().y);
-            player.setCamera(&camera, map,true);
+            player.setCamera(&camera, map.getSize(),true);
           }
         }
         
@@ -303,7 +299,7 @@ void GameLoop::loop() {
         if(player.gotHit())
           player.shakeCamera(30.0);
         
-        player.setCamera(&camera,map);
+        player.setCamera(&camera,map.getSize());
         
         
         map.setCamera(&camera);

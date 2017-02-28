@@ -1,7 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="40" height="16" tilewidth="32" tileheight="32" nextobjectid="100">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="40" height="16" tilewidth="32" tileheight="32" nextobjectid="103">
  <tileset firstgid="1" name="stage1_tilesheet" tilewidth="32" tileheight="32" tilecount="256">
   <image source="/Users/alex/GithubProjects/game_engine/content/tilesets/stage1_tilesheet.png" width="512" height="512"/>
+  <tile id="241">
+   <animation>
+    <frame tileid="241" duration="100"/>
+    <frame tileid="242" duration="100"/>
+    <frame tileid="243" duration="100"/>
+    <frame tileid="244" duration="100"/>
+    <frame tileid="245" duration="100"/>
+    <frame tileid="246" duration="100"/>
+    <frame tileid="248" duration="100"/>
+    <frame tileid="247" duration="100"/>
+   </animation>
+  </tile>
  </tileset>
  <layer name="background" width="40" height="16">
   <data>
@@ -1943,6 +1955,9 @@
   <object id="58" x="704" y="320" width="64" height="64"/>
   <object id="64" x="32" y="320" width="64" height="64"/>
   <object id="78" x="480" y="352" width="32" height="32"/>
+  <object id="100" x="1024" y="288" width="32" height="96"/>
+  <object id="101" x="1056" y="320" width="32" height="64"/>
+  <object id="102" x="1088" y="352" width="32" height="32"/>
  </objectgroup>
  <objectgroup color="#00ff00" name="spawn points">
   <object id="17" name="player" x="158.337" y="136.764" width="2.57298" height="2.77091">

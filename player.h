@@ -8,6 +8,7 @@
 #include "hud.h"
 #include "map.h"
 #include "swordhitbox.h"
+#include "inventory.h"
 
 class Boss;
 
@@ -17,11 +18,16 @@ struct COLLIDER {
   Vector2 offset;
 };
 
+struct RevivalPoint{
+  Vector2 point;
+  std::string map;
+};
+
 struct CameraOffset{
   Vector2 offset;
   float radius;
   float randomAngle;
-  bool active;
+  bool active = false;
   
   CameraOffset(){
     //active = false;
@@ -44,6 +50,14 @@ struct CameraOffset{
       }
     }
   }
+};
+
+class UpgradeManager{
+private:
+  bool _doubleJump, _glide, _airDodge;
+public:
+  UpgradeManager();
+  
 };
 
 class Player : public AnimatedSprite{
@@ -95,7 +109,7 @@ public:
   
   std::vector<Arrow> arrows;
   
-  void setCamera(SDL_Rect* screen, Map map, bool start = false);
+  void setCamera(SDL_Rect* screen, Vector2 size, bool start = false);
   void shakeCamera(float r){
     offset = CameraOffset(r);
   }
@@ -111,8 +125,6 @@ public:
   bool getInvulnerable();
   bool getDead();
   bool hitRegistered();
-  
-  void reset();
   
   int _hp = 10;
   int _hpMax = 10;
@@ -149,6 +161,17 @@ public:
   Boss* getTrackedBoss(){
     return _trackedBoss;
   }
+  
+  //revival stuff
+  void changeRevivalPoint(std::string mapName, Vector2 location);
+  void revive(Map &map);
+  void reset(Map &map);
+  
+  //Inventory management stuff
+  Inventory* getInventory();
+  void useItem();
+  void addToInventory(ItemType type);
+  void changeCurrency(int num);
   
 private:
   std::vector<COLLIDER> colliders;
@@ -193,6 +216,9 @@ private:
   
   Boss *_trackedBoss;
   bool _isTrackingBoss;
+  
+  RevivalPoint revivalPoint;
+  Inventory* inventory;
   
 };
 

@@ -12,7 +12,7 @@
 AnimatedTile::AnimatedTile(std::vector<Vector2> tilesetPositions, float duration, SDL_Texture *tileset, Vector2 size, Vector2 location)
 {
   this->_tilesetPositions = tilesetPositions;
-  this->_duration = duration;
+  this->_duration = duration/5000.0;
   this->_tileset = tileset;
   this->_size = size;
   this->_location = location;

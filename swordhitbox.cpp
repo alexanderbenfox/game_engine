@@ -103,7 +103,7 @@ void SwordHitbox::handleEnemyCollisions(Map &map){
     std::vector<Enemy*> enemies = map.checkEnemyCollisions(_currentHitbox.rect);
     for(Enemy* enemy : enemies){
       bool isDamagable = enemy->IsDamagable(hitBoxStart);
-      if (!enemy->isPlayingDeathAnimation() && isDamagable){
+      if (!enemy->isPlayingDeathAnimation() && isDamagable && !enemy->cannotBeDamaged){
         bool strong = (_currentHitbox.type == STANDING2);
         enemy->changeHealth(-3);
         if(strong)

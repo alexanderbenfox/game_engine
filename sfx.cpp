@@ -19,6 +19,9 @@ SFXManager::SFXManager(Graphics &graphics, bool arrow){
     
     SFX_SPRITES charged(&graphics, 0.03,4,59,100,CHARGED);
     
+    SFX_SPRITES pick(&graphics, 0.005,6,12,0.03,drop);
+    
+    _baseSprites[drop] = pick;
     _baseSprites[arrow_blast] = arrow_exp;
     _baseSprites[DUST] = dust;
     _baseSprites[splatter] = splat;

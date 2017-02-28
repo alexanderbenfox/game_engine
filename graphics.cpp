@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include "SDL2_image/SDL_image.h"
+#include "SDL2_ttf/SDL_ttf.h"
 #include "graphics.h"
 #include "conf.h"
 #include <iostream>
@@ -7,6 +8,7 @@
 //constructor
 Graphics::Graphics()
 {
+  TTF_Init();
   std::cout<<"Graphics created\n";
   //int SDL_CreateWindowAndRenderer(int            width,
   //                        int            height,
@@ -91,6 +93,34 @@ void Graphics::blitSurface(SDL_Rect* srcRect, SDL_Rect* destRect, SDL_Texture* s
 
 void Graphics::blitSurfaceIgnoreCamera(SDL_Rect* srcRect, SDL_Rect* destRect, SDL_Texture* srcTexture, double angle, const SDL_Point* point, const SDL_RendererFlip flip){
   SDL_RenderCopyEx(_renderer, srcTexture, srcRect, destRect, angle, point, flip);
+}
+
+void Graphics::blitSurfaceRenderText(std::string text, const char* fontLoc, int size, SDL_Color color, Vector2 position){
+  if (font == NULL){
+    printf("Error: %s", TTF_GetError());
+    font = TTF_OpenFont(fontLoc, size*SPRITE_SCALE);
+  }
+  SDL_Surface* messageSurface = TTF_RenderText_Solid(font, text.c_str(), color);
+  SDL_Texture* message = SDL_CreateTextureFromSurface(_renderer, messageSurface);
+  
+  
+  //get the text size
+  int width;
+  int height;
+  
+  if(TTF_SizeText(font, text.c_str(), &width, &height) != 0){
+    //failure
+    printf("TTF_Error: %s\n",TTF_GetError());
+    width = 100;
+    height = 100;
+  }
+  
+  SDL_Rect rect = {position.x, position.y, width, height};
+  SDL_RenderCopy(_renderer, message, NULL, &rect);
+  SDL_FreeSurface(messageSurface);
+  SDL_DestroyTexture(message);
+  //SDL_free(message);
+  
 }
 
 void Graphics::fillScreen(SDL_Color color){

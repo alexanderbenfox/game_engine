@@ -3,7 +3,7 @@
 
 EnemyHitbox::EnemyHitbox(){}
 
-EnemyHitbox::EnemyHitbox(Graphics &graphics, const std::string &filePath, int startX, int startY,float posX, float posY,int height, int width, float dx, float dy, float lifetime, bool isAnimated, bool gravity, int animLength){
+EnemyHitbox::EnemyHitbox(Graphics &graphics, const std::string &filePath, int startX, int startY,float posX, float posY,int height, int width, float dx, float dy, float lifetime, bool isAnimated, bool gravity, int animLength, int damage) : _damage(damage){
   
   _isAnimated = isAnimated;
   _gravity = gravity;
@@ -69,7 +69,7 @@ void EnemyHitbox::draw(Graphics &graphics){
 }
 
 void EnemyHitbox::collidePlayer(Player &player){
-  player.takeDamage(1);
+  player.takeDamage(_damage);
   finished = true;
 }
 

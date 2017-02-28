@@ -16,7 +16,7 @@ void Boss::draw (Graphics &graphics){
   Enemy::draw(graphics);
 }
 void Boss::playerCollision(Player* player){
-  player->takeDamage(0);
+  Enemy::collidePlayer(player);
 }
 
 void Boss::handleRightCollision(Rectangle tile){
@@ -58,9 +58,20 @@ Snake::Snake(Graphics &graphics, Vector2 spawnPoint, std::string filePath, Vecto
   
   _triggered = false;
   _wait = false;
+  _damage = 2;
   
   this->addSpriteSheet(graphics, "sprites/snakedeath-sheet.png", "death", 500, 350);
+  this->resetAttackBools();
+  _inVenomSpitAttack = false;
+  _inTailStrike = false;
+  _inLeapingAttack = false;
   
+}
+
+Snake::~Snake(){
+  SpriteLoader::getInstance()->removeTexture("sprites/snakedeath-sheet.png");
+  SpriteLoader::getInstance()->removeTexture("sprites/snakeboss-sheet.png");
+  SpriteLoader::getInstance()->removeTexture(snakeProjectile);
 }
 
 void Snake::normalCollider(){
@@ -211,9 +222,9 @@ void Snake::VenomSpitAttack(){
         float x = this->getX();
         if(_direction > 0)
           x += cur_collider.width;
-        EnemyHitbox projectile1 = EnemyHitbox(*_graphics, "sprites/spittingmonsterproj.png", 0, 0, x, this->getY(), 20, 20, _direction*2000.0, -1800, .2);
-        EnemyHitbox projectile2 = EnemyHitbox(*_graphics, "sprites/spittingmonsterproj.png", 0, 0, x, this->getY(), 20, 20, _direction*1000.0, -1600, .2);
-        EnemyHitbox projectile3 = EnemyHitbox(*_graphics, "sprites/spittingmonsterproj.png", 0, 0, x, this->getY(), 20, 20, _direction*3000.0, -2200, .2);
+        EnemyHitbox projectile1 = EnemyHitbox(*_graphics, acidBreath, 0, 0, x, this->getY(), 20, 20, _direction*2000.0, -1800, .2);
+        EnemyHitbox projectile2 = EnemyHitbox(*_graphics, acidBreath, 0, 0, x, this->getY(), 20, 20, _direction*1000.0, -1600, .2);
+        EnemyHitbox projectile3 = EnemyHitbox(*_graphics, acidBreath, 0, 0, x, this->getY(), 20, 20, _direction*3000.0, -2200, .2);
         projectile1.setDestroyable();
         projectile2.setDestroyable();
         projectile3.setDestroyable();
@@ -257,7 +268,7 @@ void Snake::TailStrike(){
         float x = this->getX();
         if(_direction > 0)
           x -= 128;
-        EnemyHitbox projectile = EnemyHitbox(*_graphics, "sprites/snaketail.png", 0, 0, x, this->getY()+cur_collider.height-28*SPRITE_SCALE, 34, 128, _direction*3000.0, 0, .2, true, false, 3);
+        EnemyHitbox projectile = EnemyHitbox(*_graphics, snakeProjectile, 0, 0, x, this->getY()+cur_collider.height-28*SPRITE_SCALE, 34, 128, _direction*3000.0, 0, .2, true, false, 3, 3);
         if(_direction < 0)
           projectile.flipSprite();
         hitboxes.push_back(projectile);
@@ -351,7 +362,7 @@ void Snake::draw (Graphics &graphics){
   Enemy::draw(graphics);
 }
 void Snake::playerCollision(Player* player){
-  player->changeHealth(-1);
+  Boss::playerCollision(player);
 }
 
 void Snake::handleRightCollision(Rectangle tile){

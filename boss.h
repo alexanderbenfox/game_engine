@@ -35,6 +35,7 @@ class Snake : public Boss{
 public:
   Snake();
   Snake(Graphics &graphics, Vector2 spawnPoint, std::string filePath, Vector2 size);
+  ~Snake();
   void update(float dt, Player &player);
   void draw (Graphics &graphics);
   void playerCollision(Player* player);
@@ -94,6 +95,11 @@ protected:
   bool startTailStrikeAttack(){
     return !(_raiseTail || _waitForStrike || _striking);
   }
+  
+private:
+  std::string snakeProjectile = "sprites/snaketail.png";
+  std::string acidBreath = "sprites/spittingmonsterproj.png";
+  
   
 };
 

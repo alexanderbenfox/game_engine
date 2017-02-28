@@ -44,6 +44,19 @@ public:
     getInstance()->_textures[filePath] = texture;
   }
   
+  static void removeTexture(std::string filePath){
+    for(auto it = getInstance()->_textures.cbegin(); it != getInstance()->_textures.cend() ; )
+    {
+      if(it->first == filePath){
+        SDL_DestroyTexture(it->second);
+        getInstance()->_textures.erase(it++);
+      }
+      else{
+        ++it;
+      }
+    }
+  }
+  
   SpriteLoader(SpriteLoader const&) = delete;
   void operator=(SpriteLoader const&) = delete;
 private:
@@ -74,6 +87,8 @@ public:
   void setY(float y);
 
   Rectangle getCollider();
+  
+  const bool collidesWith(const Rectangle &other) const;
 
   void setColliderX(int value);
   void setColliderY(int value);
@@ -95,6 +110,7 @@ protected:
   
   float _x, _y;
   bool _flipped;
+  bool _vflipped = false;
   
   Rectangle _collider;
 

@@ -12,6 +12,8 @@
 #include "conf.h"
 #include "tile.h"
 #include "animatedtile.h"
+#include "savepoint.h"
+#include "pickups.h"
 
 #include "rectangle.h"
 #include "slope.h"
@@ -25,12 +27,58 @@ class Boss;
 class Player;
 class EnemyHitbox;
 
+class TilesetLoader{
+public:
+  static TilesetLoader* getInstance(){
+    static TilesetLoader instance;
+    return &instance;
+  }
+  
+  static SDL_Texture* getTexture(std::string filePath){
+    if(getInstance()->tilesetLoaded(filePath)){
+      return getInstance()->_textures[filePath];
+    }
+    else return NULL;
+  }
+  
+  static std::map<std::string, SDL_Texture*> Textures(){
+    return getInstance()->_textures;
+  }
+  
+  static bool tilesetLoaded(std::string filePath){
+    return (getInstance()->_textures.count(filePath) != 0);
+  }
+  
+  static void addTexture(std::string filePath, SDL_Texture* texture){
+    getInstance()->_textures[filePath] = texture;
+  }
+  
+  TilesetLoader(TilesetLoader const&) = delete;
+  void operator=(TilesetLoader const&) = delete;
+private:
+  TilesetLoader(){}
+  std::map<std::string,SDL_Texture*> _textures;
+};
+
 //map contains world information and tile collision information
 class Map{
 public:
   Map();
   Map(std::string mapName, Graphics &graphics);
   ~Map();
+  
+  void deleteMap();
+  
+  template<typename T>
+  void deleteAllObjects(std::vector<T> objects){
+    
+    if(objects.size() > 0){
+      for(int i = 0; i<objects.size(); i++){
+        delete objects.at(i);
+        objects.erase(objects.begin() + i);
+      }
+    }
+  }
   
   void update(float elapsedTime, Player &player);
   void draw(Graphics &graphics);
@@ -40,8 +88,9 @@ public:
   std::vector<Slope> checkSlopeCollisions(const Rectangle &other);
   std::vector<Door> checkDoorCollisions(const Rectangle &other);
   std::vector<Enemy*> checkEnemyCollisions(const Rectangle &other);
-  std::vector<Enemy*> checkEnemyHitboxCollisions(const Rectangle &other);
+  std::vector<EnemyHitbox*> checkEnemyHitboxCollisions(const Rectangle &other);
   std::vector<EnemyHitbox*> checkEnemyHitboxForDestruction(const Rectangle &other);
+  std::vector<Rectangle> checkCheckPointCollisions(const Rectangle &other);
   
   const Vector2 getPlayerSpawnPoint() const;
   void setCamera(SDL_Rect *camera);
@@ -51,7 +100,14 @@ public:
   
   Vector2 getSize();
   
+  std::string getMapName(){
+    return _mapName;
+  }
+  
+  void addItemToMap(Pickup* item);
+  
 protected:
+  bool _loaded;
   SDL_Rect _camera;
   std::string _mapName;
   Vector2 _spawnPoint;
@@ -76,6 +132,8 @@ protected:
   std::vector<Slope> _slopes;
   std::vector<Door> _doors;
   std::vector<Tile*> _specialTiles;
+  std::vector<SavePoint*> _checkpoints;
+  std::vector<Pickup*> _items;
   
   //NPC Information
   //enemies, npcs, etc. will go here
@@ -84,6 +142,7 @@ protected:
   std::vector<Boss*> _bosses;
   
   void handleEnemyCollisions(Enemy* enemy);
+  void handlePickupCollisions(Pickup* pickup);
   
   
   //Helper Methods

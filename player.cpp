@@ -14,7 +14,11 @@ Player::Player(Graphics &graphics, const std::string &filePath, int startX, int 
   hud = HUD(graphics);
   sfx = SFXManager(graphics);
   hitbox = SwordHitbox(graphics);
+  inventory = new Inventory(graphics);
   _graphics = &graphics;
+  
+  this->setX(posX);
+  this->setY(posY);
   
   this->addAnimation(.01, 1, 0, 0, "Idle", 32, 64, Vector2(0,0),"main");
   this->addAnimation(.01, 1, 1, 0, "StandingJump", 32, 64, Vector2(0,0),"main");
@@ -426,7 +430,7 @@ void Player::check_crouch(bool crouch){
     _crouched = false;
 }
 
-void Player::setCamera(SDL_Rect* screen, Map map, bool start){
+void Player::setCamera(SDL_Rect* screen, Vector2 size, bool start){
   float x = this->getX()+ _collider.getWidth()/2 - WINDOW_WIDTH/2;
   float y = this->_collider.getCenterY() +_collider.getHeight()/2 - WINDOW_HEIGHT/2;
   
@@ -436,16 +440,16 @@ void Player::setCamera(SDL_Rect* screen, Map map, bool start){
   if(x < 0){
     x = 0;
   }
-  if (x+WINDOW_WIDTH > (map.getSize().x*SPRITE_SCALE)){
-    x = map.getSize().x*SPRITE_SCALE - WINDOW_WIDTH;
+  if (x+WINDOW_WIDTH > (size.x*SPRITE_SCALE)){
+    x = size.x*SPRITE_SCALE - WINDOW_WIDTH;
   }
   
   if(y < 0){
     y = 0;
   }
   
-  if(y + WINDOW_HEIGHT > (map.getSize().y*SPRITE_SCALE)){
-    y = map.getSize().y*SPRITE_SCALE - WINDOW_HEIGHT;
+  if(y + WINDOW_HEIGHT > (size.y*SPRITE_SCALE)){
+    y = size.y*SPRITE_SCALE - WINDOW_HEIGHT;
   }
   
   float cameraSpeed = .1;
@@ -537,6 +541,11 @@ void Player::handleCollisions(Map &map){
       }
     }
   }
+  
+  std::vector<Rectangle> checkpoints = map.checkCheckPointCollisions(_collider);
+  for(int i = 0; i < checkpoints.size(); i++){
+    changeRevivalPoint(map.getMapName(), Vector2(checkpoints[i].getLeft(),checkpoints[i].getTop()));
+  }
   handleOneWayCollisions(map);
   handleSlopeCollisions(map, gotCollision);
   handleEnemyCollisions(map);
@@ -580,13 +589,10 @@ void Player::handleEnemyCollisions(Map &map){
       enemy->collidePlayer(this);
   }
   
-  std::vector<Enemy*> hitters = map.checkEnemyHitboxCollisions(_collider);
-  for(Enemy* enemy : hitters){
-    for(EnemyHitbox hb : enemy->hitboxes){
-      if(hb.collidesWith(_collider))
-        if(!_invulnerable)
-          enemy->collidePlayer(this);
-    }
+  std::vector<EnemyHitbox*> hitters = map.checkEnemyHitboxCollisions(_collider);
+  for(int i = 0; i < hitters.size(); i++){
+    if(!_invulnerable)
+      hitters.at(i)->collidePlayer(*this);
   }
 }
 
@@ -681,9 +687,14 @@ void Player::createArrow(){
 }
 
 void Player::changeHealth(int x){
-  _hp += x;
-  if(_hp <= 0){
-    _dead = true;
+  if((_hp + x) <= _hpMax){
+    _hp += x;
+    if(_hp <= 0){
+      _dead = true;
+    }
+  }
+  else{
+    _hp = _hpMax;
   }
 }
 
@@ -730,10 +741,47 @@ bool Player::hitRegistered(){
   //return hitbox.hitRegistered();
 }
 
-void Player::reset(){
+void Player::reset(Map &map){
   if(_dead){
     _dead = false;
     _hp = _hpMax;
     _currentAnimationDone = false;
+    _knockBack = false;
+    _isTrackingBoss = false;
+    _dx = 0;
+    _dy = 0;
+    shakeCamera(0);
+    this->revive(map);
+  }
+}
+
+void Player::changeRevivalPoint(std::string mapName, Vector2 location){
+  this->revivalPoint.map = mapName;
+  this->revivalPoint.point = location;
+}
+
+void Player::revive(Map &map){
+  map.deleteMap();
+  map = Map(revivalPoint.map, *_graphics);
+  inventory->getCurrentItem()->addToInventory(5);
+  this->setX(revivalPoint.point.x);
+  this->setY(revivalPoint.point.y-32);
+}
+
+Inventory* Player::getInventory(){
+  return inventory;
+}
+
+void Player::useItem(){
+  inventory->getCurrentItem()->usePlayer(this);
+}
+
+void Player::addToInventory(ItemType type){
+  inventory->addToInventory(type);
+}
+void Player::changeCurrency(int num){
+  inventory->changeCurrency(num);
+  if(num == 1){
+    sfx.addSFX(drop, this->getX(), this->getY()+32*SPRITE_SCALE);
   }
 }

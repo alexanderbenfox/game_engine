@@ -3890,8 +3890,8 @@
    <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="0"/>
-   <tile gid="5"/>
-   <tile gid="8"/>
+   <tile gid="0"/>
+   <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="0"/>
@@ -3917,8 +3917,8 @@
    <tile gid="131"/>
    <tile gid="0"/>
    <tile gid="0"/>
-   <tile gid="41"/>
-   <tile gid="57"/>
+   <tile gid="0"/>
+   <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="0"/>
@@ -4941,7 +4941,6 @@
   <object id="197" x="480" y="864" width="64" height="32"/>
   <object id="198" x="576" y="736" width="64" height="32"/>
   <object id="201" x="192" y="512" width="64" height="32"/>
-  <object id="228" x="384" y="256" width="64" height="64"/>
  </objectgroup>
  <objectgroup name="onewayplatform">
   <object id="143" x="224" y="928" width="64"/>
@@ -5011,10 +5010,10 @@
     <property name="spawnY" value="64"/>
    </properties>
   </object>
-  <object id="231" name="Map 1-2" x="800" y="1248" width="32" height="64">
+  <object id="231" name="fireroom" x="800" y="1248" width="32" height="64">
    <properties>
     <property name="spawnX" value="32"/>
-    <property name="spawnY" value="224"/>
+    <property name="spawnY" value="192"/>
    </properties>
   </object>
  </objectgroup>

@@ -11,6 +11,7 @@
 #include "conf.h"
 #include "enemy.h"
 #include "boss.h"
+#include "inventory.h"
 
 #include "tinyxml2.h"
 
@@ -31,12 +32,21 @@ Map::Map(){
 Map::Map(std::string mapName, Graphics &graphics){
   this->_mapName = mapName;
   this->_size = Vector2(0,0);
+  _loaded = false;
   
   loadMap(this->_mapName, graphics);
 }
 
-Map::~Map(){
-  
+Map::~Map(){}
+
+void Map::deleteMap(){
+  if(_loaded){
+    deleteAllObjects(_specialTiles);
+    deleteAllObjects(_checkpoints);
+    deleteAllObjects(_enemies);
+    deleteAllObjects(_bosses);
+    deleteAllObjects(_items);
+  }
 }
 
 const Vector2 Map::getPlayerSpawnPoint() const{
@@ -70,7 +80,15 @@ void Map::loadMap(std::string mapName, Graphics &graphics){
   //Load slopes and other objects
   LoadObjects((int*)mapNode, graphics);
   
+  doc.DeleteNode(mapNode);
+  //delete map_file_name;
+  
+  _loaded = true;
   std::cout<<"done"<<std::endl;
+}
+
+void Map::addItemToMap(Pickup* item){
+  _items.push_back(item);
 }
 
 void Map::handleEnemyCollisions(Enemy* enemy){
@@ -101,7 +119,30 @@ void Map::handleEnemyCollisions(Enemy* enemy){
   
   std::vector<Slope> slopes = checkSlopeCollisions(enemyCol);
   enemy->handleSlopeCollisions(slopes, otherCollision);
-  
+}
+
+void Map::handlePickupCollisions(Pickup* item){
+  Rectangle itemCol = item->getCollider();
+  std::vector<Rectangle> tiles = checkTileCollisions(itemCol);
+  for (Rectangle tile : tiles){
+    collision_sides::Side side = item->Sprite::getCollisionSide(tile);
+    if (side != collision_sides::NONE){
+      switch(side){
+        case(collision_sides::RIGHT) :
+          item->handleRightCollision(tile);
+          break;
+        case(collision_sides::LEFT) :
+          item->handleLeftCollision(tile);
+          break;
+        case(collision_sides::TOP) :
+          item->handleUpCollision(tile);
+          break;
+        case(collision_sides::BOTTOM) :
+          item->handleDownCollision(tile);
+          break;
+      }
+    }
+  }
 }
 
 void Map::setCamera(SDL_Rect *camera){
@@ -132,6 +173,19 @@ void Map::update(float elapsedTime, Player &player){
     _animTiles.at(i).update(elapsedTime);
   }
   
+  for(int i = 0; i<_items.size(); i++){
+    handlePickupCollisions(_items.at(i));
+    _items.at(i)->update(elapsedTime, &player);
+    if(_items.at(i)->isPickedUp()){
+      delete _items.at(i);
+      _items.erase(_items.begin() + i);
+    }
+  }
+  
+  for(int i = 0; i < _checkpoints.size(); i++){
+    _checkpoints.at(i)->update(elapsedTime, player);
+  }
+  
   player.touchedMovingPlatform = false;
   for(int i = 0; i<_specialTiles.size();i++){
     _specialTiles.at(i)->update(elapsedTime, player);
@@ -146,6 +200,7 @@ void Map::update(float elapsedTime, Player &player){
       if(_enemies.at(i)->getHitTrigger()){
         _hitTrigger = true;
         if(_enemies.at(i)->isPlayingDeathAnimation()){
+          _enemies.at(i)->dropGold(this);
           _deathTrigger = true;
         }
       }
@@ -162,6 +217,7 @@ void Map::update(float elapsedTime, Player &player){
     if(_bosses.at(i)->getHitTrigger()){
       _hitTrigger = true;
       if(_bosses.at(i)->isPlayingDeathAnimation()){
+        _bosses.at(i)->dropGold(this);
         _deathTrigger = true;
       }
     }
@@ -179,6 +235,14 @@ void Map::update(float elapsedTime, Player &player){
 void Map::draw(Graphics &graphics){
   for (int i = 0; i<_tiles.size(); i++){
     _tiles.at(i).draw(graphics);
+  }
+  
+  for(int i = 0; i< _items.size(); i++){
+    _items.at(i)->draw(graphics);
+  }
+  
+  for(int i = 0; i< _checkpoints.size(); i++){
+    _checkpoints.at(i)->draw(graphics);
   }
   
   for (int i = 0; i<_animTiles.size(); i++){
@@ -264,7 +328,14 @@ void Map::LoadTilesets(int* mapNode, Graphics &graphics)
       ss << source;
       firstGID = getElementsFromXML("firstgid", pTileset);
       
-      SDL_Texture* tex = SDL_CreateTextureFromSurface(graphics.getRenderer(), graphics.loadImage(ss.str()));
+      if(!TilesetLoader::tilesetLoaded(ss.str()))
+        TilesetLoader::addTexture(ss.str(),SDL_CreateTextureFromSurface(graphics.getRenderer(), graphics.loadImage(ss.str())));
+      SDL_Texture* tex = TilesetLoader::getTexture(ss.str());
+      //SDL_Texture* tex = SDL_CreateTextureFromSurface(graphics.getRenderer(), graphics.loadImage(ss.str()));
+      
+      if(tex == NULL){
+        printf("Unable to load tileset\n");
+      }
       
       //put new tileset into the data structure
       this->_tilesets.push_back(Tileset(tex,firstGID));
@@ -409,6 +480,22 @@ void Map::LoadObjects(int *mapNode, Graphics &graphics)
     while(objectGroup)
     {
       const char* objName = objectGroup->Attribute("name");
+      if(strcmp(objName, "checkpoint") == 0){
+        XMLElement* checkpoint = objectGroup->FirstChildElement("object");
+        while(checkpoint != NULL)
+        {
+          int x = std::ceil(checkpoint->FloatAttribute("x")) * SPRITE_SCALE;
+          int y = std::ceil(checkpoint->FloatAttribute("y")) * SPRITE_SCALE;
+          int width = std::ceil(checkpoint->FloatAttribute("width")) * SPRITE_SCALE;
+          int height = std::ceil(checkpoint->FloatAttribute("height")) * SPRITE_SCALE;
+        
+          SavePoint* sp = new SavePoint(graphics, x, y,_mapName);
+          _checkpoints.push_back(sp);
+          
+          checkpoint = checkpoint->NextSiblingElement("object");
+        }
+        
+      }
       if(strcmp(objName, "collisions") == 0)
       {
         XMLElement* collision = objectGroup->FirstChildElement("object");
@@ -646,6 +733,23 @@ void Map::LoadObjects(int *mapNode, Graphics &graphics)
             _bosses.push_back(new Snake(graphics, Vector2(x,y), "sprites/snakeboss-sheet.png", Vector2(500,350)));
           }
           
+          if(strcmp(enemyType, "SpikeHazard") == 0){
+            Enemy* spike = new SpikeHazard(graphics, Vector2(x,y));
+            if(enemy->FirstChildElement("properties") != NULL){
+              XMLElement* prop = enemy->FirstChildElement("properties")->FirstChildElement("property");
+              const char* type = prop->Attribute("value");
+            }
+            _enemies.push_back(spike);
+          }
+          
+          if(strcmp(enemyType, "Fodder") == 0){
+            _enemies.push_back(new Fodder(graphics, Vector2(x,y)));
+          }
+          
+          if(strcmp(enemyType, "FireballHazard") == 0){
+            _enemies.push_back(new FireballHazard(graphics, Vector2(x,y)));
+          }
+          
           enemy = enemy->NextSiblingElement("object");
         }
         
@@ -711,13 +815,23 @@ std::vector<Door> Map::checkDoorCollisions(const Rectangle &other){
   return overlapRectangles(other, _doors);
 }
 
-std::vector<Enemy*> Map::checkEnemyHitboxCollisions(const Rectangle &other){
-  std::vector<Enemy*> overlaps;
+std::vector<Rectangle> Map::checkCheckPointCollisions(const Rectangle &other){
+  std::vector<Rectangle> overlaps;
+  for(int i = 0; i < _checkpoints.size(); i++){
+    if(_checkpoints.at(i)->collidesWith(other)){
+      overlaps.push_back(_checkpoints.at(i)->getCollider());
+    }
+  }
+  return overlaps;
+}
+
+std::vector<EnemyHitbox*> Map::checkEnemyHitboxCollisions(const Rectangle &other){
+  std::vector<EnemyHitbox*> overlaps;
   for(int i = 0; i< _enemies.size(); i++)
   {
     for(int j = 0; j < _enemies.at(i)->hitboxes.size(); j++){
       if(_enemies.at(i)->hitboxes.at(j).collidesWith(other))
-        overlaps.push_back(_enemies.at(i));
+        overlaps.push_back(&_enemies.at(i)->hitboxes.at(j));
     }
   }
   
@@ -725,7 +839,7 @@ std::vector<Enemy*> Map::checkEnemyHitboxCollisions(const Rectangle &other){
   {
     for(int j = 0; j < _bosses.at(i)->hitboxes.size(); j++){
       if(_bosses.at(i)->hitboxes.at(j).collidesWith(other))
-        overlaps.push_back(_bosses.at(i));
+        overlaps.push_back(&_bosses.at(i)->hitboxes.at(j));
     }
   }
   return overlaps;

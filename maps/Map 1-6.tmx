@@ -1969,7 +1969,7 @@
    <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="0"/>
-   <tile gid="105"/>
+   <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="82"/>
@@ -2439,7 +2439,6 @@
   <object id="136" x="416" y="128" width="32" height="32"/>
   <object id="137" x="992" y="192" width="32" height="64"/>
   <object id="138" x="1024" y="224" width="32" height="32"/>
-  <object id="139" x="1024" y="96" width="32" height="32"/>
   <object id="140" x="1120" y="128" width="128" height="32"/>
   <object id="141" x="1136" y="160" width="112" height="24"/>
   <object id="142" x="1216" y="32" width="32" height="96"/>

@@ -12,7 +12,7 @@ public:
   AnimatedSprite animSprite;
   
   EnemyHitbox();
-  EnemyHitbox(Graphics &graphics, const std::string &filePath, int startX, int startY,float posX, float posY,int height, int width, float dx, float dy, float lifetime, bool isAnimated = false, bool gravity = true, int animLength = 0);
+  EnemyHitbox(Graphics &graphics, const std::string &filePath, int startX, int startY,float posX, float posY,int height, int width, float dx, float dy, float lifetime, bool isAnimated = false, bool gravity = true, int animLength = 0, int damage = 1);
   
   const bool collidesWith(const Rectangle &other) const {
     return
@@ -45,6 +45,7 @@ public:
   
 private:
   int length;
+  int _damage;
   
   float _dx,_dy;
   bool _isAnimated = false;

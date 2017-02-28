@@ -20,6 +20,16 @@ void BossHealthBar::update(float dt, Player *player){
   }
 }
 
+void ItemUI::update(float dt, Player *player){
+  Item *item = player->getInventory()->getCurrentItem();
+  itemPicture = *item->getSprite();
+  num = item->getNum();
+}
+
+void CurrencyUI::update(float dt, Player *player){
+  num = player->getInventory()->getCurrency();
+}
+
 HUD::HUD(){
   
 }
@@ -44,6 +54,7 @@ HUD::HUD(Graphics &graphics){
   BossHealthBar bosshp;
   bosshp.posX = 0;
   bosshp.posY = WINDOW_HEIGHT - 96;
+  bosshp.name = "Snake King Geedorah";
   bosshp.graphic = Sprite(graphics, "sprites/healthbar.png", 0,0,1,1,WINDOW_WIDTH/SPRITE_SCALE,20*SPRITE_SCALE);
   bosshp.cover = Sprite(graphics, "sprites/healthbarcover.png", 0,0,1,1,WINDOW_WIDTH/SPRITE_SCALE,20*SPRITE_SCALE);
   bosshp.graphic.setHUD();
@@ -56,15 +67,36 @@ HUD::HUD(Graphics &graphics){
   bosshp.current = 5;
   
   _bossHealthBar = bosshp;
+  
+  ItemUI itemUI;
+  itemUI.posX = 16*SPRITE_SCALE;
+  itemUI.posY = 32*SPRITE_SCALE;
+  itemUI.graphic = Sprite(graphics, "sprites/item-ui.png",0,0,1,1,32,32);
+  itemUI.graphic.setHUD();
+  itemUI.graphic._spriteScale = 2;
+  _itemUI = itemUI;
+  
+  CurrencyUI currency;
+  currency.posX = 64 * SPRITE_SCALE;
+  currency.posY = 32 *SPRITE_SCALE;
+  currency.graphic = Sprite(graphics, "sprites/currency-ui.png",0,0,1,1,64,25);
+  currency.graphic.setHUD();
+  currency.graphic._spriteScale = 2;
+  _currencyUI = currency;
+  
 }
 
 void HUD::update(float dt, Player* player){
   _healthBar.update(dt,player);
   _bossHealthBar.update(dt,player);
+  _itemUI.update(dt, player);
+  _currencyUI.update(dt,player);
   
 }
 
 void HUD::draw(Graphics &graphics){
   _healthBar.draw(graphics);
   _bossHealthBar.draw(graphics);
+  _itemUI.draw(graphics);
+  _currencyUI.draw(graphics);
 }

@@ -148,6 +148,14 @@ void Sprite::setY(float y){
   _y = y;
 }
 
+const bool Sprite::collidesWith(const Rectangle &other) const{
+  return
+  (_collider.getRight()) >= other.getLeft() &&
+  (_collider.getLeft()) <= other.getRight() &&
+  (_collider.getBottom()) >= other.getTop() &&
+  (_collider.getTop()) <= other.getBottom();
+}
+
 //sides stuff goes here
 
 

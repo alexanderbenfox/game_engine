@@ -123,6 +123,7 @@ void AnimatedSprite::draw(Graphics &graphics, int x, int y)
     
     SDL_Rect sourceRect = _animations[_currentAnimation].frames[_frameIndex];
     SDL_RendererFlip flip = _flipped ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+    flip = _vflipped ? SDL_FLIP_VERTICAL : flip;
     
     if(_flipped){
       SHEET currSheet = _spriteSheets[_animations[_currentAnimation].sheet];

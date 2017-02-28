@@ -7,12 +7,14 @@ Enemy::Enemy(Graphics &graphics, const std::string &filePath, int startX, int st
 {
   _dx = 0;
   _dy = 0;
+  _damage = 1;
   
   _dead = false;
   _death = false;
   _knockBack = false;
   _actionTimer = 0;
   _knockBackSlow = 13;
+  cannotBeDamaged = false;
   
   _scale = 2;
   _spriteScale = 2;
@@ -77,6 +79,10 @@ void Enemy::handleDownCollision(Rectangle tile){
   _grounded = true;
   this->setY(tile.getTop() - _collider.getHeight() - cur_collider.offset.y);
   _colDown = true;
+}
+
+void Enemy::collidePlayer(Player *player){
+  player->takeDamage(_damage);
 }
 
 void Enemy::handleSlopeCollisions(std::vector<Slope> slopes, bool otherCollision){
@@ -228,23 +234,28 @@ void Enemy::knockBack(float direction, bool strong){
   _actionTimer = 0.25;
 }
 
-void Enemy::collidePlayer(Player *player){
-  player->takeDamage(1);
+bool Enemy::isInCameraRange(SDL_Rect *camera){
+  int margin = 64*SPRITE_SCALE;
+  int x1 = camera->x - margin;
+  int x2 = camera->x + camera->w + margin;
+  int y1 = camera->y - margin;
+  int y2 = camera->y + camera->h + margin;
+  
+  bool inRange =
+  _collider.getRight() >= x1 &&
+  _collider.getLeft()<= (x2) &&
+  _collider.getBottom() >= y1 &&
+  _collider.getTop() <= (y2);
+  
+  return inRange;
 }
 
-bool Enemy::isInCameraRange(SDL_Rect *camera){
-  bool inRange = false;
-  int margin = 70*SPRITE_SCALE;
-  int x1 = camera->x-margin;
-  int x2 = camera->x + camera->w + margin;
-  int y1 = camera->y-margin;
-  int y2 = camera->y + camera->h + margin;
-  if(this->getX() > x1 && this->getX() < x2){
-    if(this->getY() > y1 && this->getY() < y2){
-      inRange = true;
-    }
+void Enemy::dropGold(Map *map){
+  for(int i = 0; i < goldDrop;i++)
+  {
+    Currency *c = new Currency(*_graphics, this->getCollider().getCenterX(), this->getCollider().getCenterY());
+    map->addItemToMap(c);
   }
-  return inRange;
 }
 
 
@@ -326,7 +337,7 @@ void Walker::draw (Graphics &graphics){
   Enemy::draw(graphics);
 }
 void Walker::playerCollision(Player* player){
-  player->changeHealth(-1);
+  player->changeHealth(-_damage);
 }
 
 void Walker::handleRightCollision(Rectangle tile){
@@ -1164,7 +1175,7 @@ void Headless::update(float dt, Player &player){
       if(_actionTimer <= 0){
         _attacking = false;
         _wait = true;
-        _actionTimer = 0.1;
+        _actionTimer = 0.15;
       }
     }
     

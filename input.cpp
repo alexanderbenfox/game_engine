@@ -4,16 +4,27 @@
 #include <iterator>
 
 Input::Input(){
-  for(int i = 0 ; i < 9; i++){
+  for(int i = 0 ; i < 11; i++){
     oldkeystates[keys[i]] = false;
   }
 }
 
 //resets keys from last frame
 void Input::beginNewFrame(){
-  _pressed_keys.clear();
-  _released_keys.clear();
-  _held_keys.clear();
+  //_pressed_keys.clear();
+  //_released_keys.clear();
+  //_held_keys.clear();
+  clearKeys(&_pressed_keys);
+  clearKeys(&_released_keys);
+  clearKeys(&_held_keys);
+}
+
+void Input::clearKeys(std::map<SDL_Scancode, bool> *keyMap){
+  std::map<SDL_Scancode, bool>::iterator it = keyMap->begin();
+  while(it != keyMap->end()){
+    it->second = false;
+    it++;
+  }
 }
 
 
@@ -42,7 +53,7 @@ bool Input::keyIsHeld(SDL_Scancode key){
 void Input::updateKeys(const Uint8 *newkeystates){
   keystates = newkeystates;
   
-  for(int i = 0; i < 9; i++)
+  for(int i = 0; i < 11; i++)
   {
     if(keystates[keys[i]] && oldkeystates[keys[i]]){
       _held_keys[keys[i]] = true;
@@ -57,7 +68,7 @@ void Input::updateKeys(const Uint8 *newkeystates){
     }
   }
   
-  for(int i = 0; i < 9; i++)
+  for(int i = 0; i < 11; i++)
   {
     oldkeystates[keys[i]] = keystates[keys[i]];
   }

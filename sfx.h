@@ -56,6 +56,7 @@ struct SFX{
     _sprite.playAnimation("Animation");
     _sprite._spriteScale = 2;
     type = setupSprite._type;
+    _done = false;
   }
   
   void update(float dt){
