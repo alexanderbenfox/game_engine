@@ -49,10 +49,6 @@ public:
 // we use a fixed timestep of 1 / (60 fps) = 16 milliseconds
 //constexpr std::chrono::nanoseconds timestep(16ms);
 
-struct game_state {
-  // this contains the state of your game, such as positions and velocities
-};
-
 struct cpu_clock {
 
   typedef std::chrono::milliseconds ms;

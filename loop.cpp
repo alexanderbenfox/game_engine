@@ -135,14 +135,6 @@ void GameLoop::processInputs(GameState *gamestate, Input &input){
   gamestate->processInput(input);
 }
 
-game_state interpolate(game_state const & current, game_state const & previous, float alpha) {
-  game_state interpolated_state;
-
-  // interpolate between previous and current by alpha here
-
-  return interpolated_state;
-}
-
 float GameLoop::approach(float goal, float current, float dt){
   float diff = goal - current;
   if (diff > dt){
@@ -161,7 +153,10 @@ void GameLoop::loop() {
   Graphics graphics;
   Input input;
   PlayState playState = PlayState(&graphics);
-  currState = &playState;
+  StartMenuState startMenuState = StartMenuState();
+  //currState = &playState;
+  StateTransition::getInstance()->setCurrentGameState(start_menu);
+  currState = &startMenuState;
   SDL_Event event;
   
   cpu_clock clock;
@@ -174,6 +169,11 @@ void GameLoop::loop() {
   bool quit_game = false;
 
   while(!quit_game) {
+    if(StateTransition::getInstance()->getCurrentGameState() == game_play){
+      currState = &playState;
+    }
+    
+    
     if(frames == 0){
       startTime = SDL_GetTicks();
     }
