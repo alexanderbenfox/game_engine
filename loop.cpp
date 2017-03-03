@@ -119,15 +119,20 @@ bool GameLoop::handle_events(SDL_Event event) {
   return false; // true if the user wants to quit the game
 }
 
-void GameLoop::update(game_state *, cpu_clock::ms elapsed_time) {
+void GameLoop::update(GameState * gamestate, float dt, Graphics *graphics) {
   // update game logic here
+  gamestate->update(dt, graphics);
 }
 
-void GameLoop::draw(game_state const &, Graphics graphics) {
+void GameLoop::draw(GameState* gamestate, Graphics *graphics) {
   // render stuff here
-  graphics.clear();
-  this->player.draw(graphics);
-  graphics.render();
+  graphics->clear();
+  gamestate->draw(graphics);
+  graphics->render();
+}
+
+void GameLoop::processInputs(GameState *gamestate, Input &input){
+  gamestate->processInput(input);
 }
 
 game_state interpolate(game_state const & current, game_state const & previous, float alpha) {
@@ -155,33 +160,18 @@ void GameLoop::loop() {
   //create graphics objects
   Graphics graphics;
   Input input;
+  PlayState playState = PlayState(&graphics);
+  currState = &playState;
   SDL_Event event;
-  SDL_Rect camera;
-  camera.w = WINDOW_WIDTH;
-  camera.h = WINDOW_HEIGHT;
-  
-  this->map = Map("Map 7",graphics);
-  Vector2 spawnPoint = map.getPlayerSpawnPoint();
-  this->player = Player(graphics, "sprites/playerspritesheett.png",1 ,1, spawnPoint.x-32, spawnPoint.y - 60, 64, 32);
-  player.playAnimation("Idle");
-  player.setCamera(&camera, map.getSize(), true);
-  player.changeRevivalPoint("Map 1-1", spawnPoint);
-  int pauseTime = 0;
-  
-  //graphics.setCamera(&player.camera.screen);
   
   cpu_clock clock;
   clock.setFPS();
   
   float frames = 0;
   float startTime = SDL_GetTicks();
-  int drops = 0;
 
   auto previous_time = clock.now();
   bool quit_game = false;
-
-  game_state current_state;
-  game_state previous_state;
 
   while(!quit_game) {
     if(frames == 0){
@@ -197,143 +187,22 @@ void GameLoop::loop() {
     clock.lag += dt;
 
     quit_game = handle_events(event);
-    
-    float x = 0;
-    float y = 0;
-    bool crouching = false;
-    
-    
-    
     const Uint8 *keystates = SDL_GetKeyboardState(NULL);
     input.updateKeys(keystates);
     
-    
-    if (input.keyWasPressed(SDL_SCANCODE_A))
-    {
-      if (keystates[SDL_SCANCODE_DOWN]){
-        player.dropDown();
-      }
-      else
-        player.jump();
-    }
-    if (keystates[SDL_SCANCODE_DOWN])
-    {
-      crouching = true;
-    }
-    if (keystates[SDL_SCANCODE_LEFT])
-    {
-      x -= 1000.0;
-    }
-    if (keystates[SDL_SCANCODE_RIGHT])
-    {
-      x += 1000.0;
-    }
-    if(input.keyIsHeld(SDL_SCANCODE_D)){
-      player.chargeShot();
-    }
-    else{
-      player.stopCharging();
-    }
-    if (input.keyWasReleased(SDL_SCANCODE_D))
-    {
-      player.shoot();
-    }
-    if (input.keyWasPressed(SDL_SCANCODE_S))
-    //if (keystates[SDL_SCANCODE_S])
-    {
-      player.attack();
-    }
-    if (input.keyWasPressed(SDL_SCANCODE_Q))
-    {
-      player.dodge();
-    }
-    
-    if(input.keyWasPressed(SDL_SCANCODE_RETURN)){
-      player.reset(this->map);
-    }
-    
-    if(input.keyWasPressed(SDL_SCANCODE_W)){
-      player.useItem();
-    }
-    
-    //std::cout<<dt<<std::endl;
-    //float nothing = approach(x,player._dx,dt*10);
-    
-    player.moveSprite(x,y);
-    player.check_crouch(crouching);
-   
+    processInputs(currState, input);
 
     // try to maintain 60 fps
     while(clock.lag >= clock.timestep) {
-      //dt = clock.toSeconds(clock.timestep);
       clock.lag -= clock.timestep;
-      
-      if(!player.getDead()){
-        
-        if (player.hitRegistered())
-          pauseTime = 6*(clock.fps/30);
-        
-        if (player.hitRegistered() || pauseTime > 0){
-          pauseTime -= (1);
-        }
-        else{
-          player.update(clock.frametime);
-          player.applyGravity(clock.frametime);
-          player.handleCollisions(map);
-          
-          //transition to another room
-          if (player.handleDoorCollisions(map) && input.keyWasPressed(SDL_SCANCODE_UP)){
-            Door newRoom = player.getNewRoom();
-            this->map.deleteMap();
-            this->map = Map(newRoom.getDestination(),graphics);
-            player.setX(newRoom.getSpawn().x);
-            player.setY(newRoom.getSpawn().y);
-            player.setCamera(&camera, map.getSize(),true);
-          }
-        }
-        
-        //if(map.screenShakeTrigger())
-        //  player.shakeCamera(5.0);
-        if(map.screenBigShakeTrigger())
-          player.shakeCamera(20.0);
-        if(player.gotHit())
-          player.shakeCamera(30.0);
-        
-        player.setCamera(&camera,map.getSize());
-        
-        
-        map.setCamera(&camera);
-        map.update(clock.frametime, player);
-        player.updateAttachments(clock.frametime);
-      }
-      else{
-        player.update(clock.frametime);
-      }
-      
-
-      //previous_state = current_state;
-      //update(&current_state, clock.timestep); // update at a fixed rate each time
-      
+      update(currState, clock.frametime, &graphics);
     }
-
-    // calculate how close or far we are from the next timestep
-    //auto alpha = (float) clock.lag.count() / clock.timestep.count();
-    //auto interpolated_state = interpolate(current_state, previous_state, alpha);
-
-    graphics.clear();
     
-    if(!player.getDead())
-      this->map.draw(graphics);
-    this->player.draw(graphics);
-    
-    graphics.setCamera(&camera);
-    graphics.render();
+    draw(currState, &graphics);
     
     //Cap the frame rate
     if( fps.get_ticks() < clock.timestep)
     {
-      float otherthing = fps.get_ticks();
-      float thing = clock.timestep - fps.get_ticks();
       SDL_Delay( ( clock.timestep ) - fps.get_ticks() );
     }
     
@@ -341,16 +210,7 @@ void GameLoop::loop() {
       float f = (1000*frames)/((SDL_GetTicks()-startTime));
       std::cout<<"FPS:"<<f<<std::endl;
       frames = 0;
-      if(f < 50){
-        drops++;
-        
-        std::cout<<"yo"<<std::endl;
-        std::cout<<drops<<std::endl;
-      }
     }
-    
-
-    //draw(interpolated_state, graphics);
   }
   printf("Done\n");
 }

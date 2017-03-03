@@ -6,6 +6,7 @@
 #include "input.h"
 #include "map.h"
 #include "player.h"
+#include "gamestate.h"
 
 #ifndef GAMELOOP_H
 #define GAMELOOP_H
@@ -102,12 +103,13 @@ public:
 	~GameLoop();
 private:
 	bool handle_events(SDL_Event event);
-	void update(game_state *, cpu_clock::ms elapsed_time);;
-	void draw(game_state const &, Graphics graphics);
+	void update(GameState* gamestate, float dt, Graphics *graphics);
+	void draw(GameState* gamestate, Graphics *graphics);
+  void processInputs(GameState* gamestate, Input &input);
 	void loop();
   float approach(float goal, float current, float dt);
-  Player player;
-  Map map;
+  GameState* currState;
+  
 };
 
 #endif

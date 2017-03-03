@@ -1124,6 +1124,11 @@ void Headless::update(float dt, Player &player){
     
     bool withinZone = getWithinStrikeZone(player, 64);
     
+    if(_grounded){
+      _dy -= 350;
+      _grounded = false;
+    }
+    
     if(!withinZone){
       _dx = (_direction) * 300.0;
     }else{
@@ -1200,7 +1205,6 @@ void Headless::update(float dt, Player &player){
       _dead = true;
     }
   }
-  
   this->setY(this->getY() + _dy*dt);
   this->setX(this->getX() + _dx*dt);
 }
