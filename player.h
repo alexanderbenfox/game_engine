@@ -54,10 +54,41 @@ struct CameraOffset{
 
 class UpgradeManager{
 private:
-  bool _doubleJump, _glide, _airDodge;
+  bool _doubleJump, _glide, _airDodge, _chargeSpeed;
 public:
-  UpgradeManager();
+  UpgradeManager(){
+    _doubleJump = false;
+    _glide = false;
+    _airDodge = false;
+    _chargeSpeed = false;
+  }
   
+  bool getChargeSpeed(){
+    return _chargeSpeed;
+  }
+  
+  void acquireChargeSpeed(){
+    _chargeSpeed = true;
+  }
+  
+};
+
+class PersistentInfo{
+public:
+  static PersistentInfo* getInstance(){
+    static PersistentInfo instance;
+    return &instance;
+  }
+  
+  static UpgradeManager* getUpgrades(){
+    return &getInstance()->upgrades;
+  }
+  
+  PersistentInfo(PersistentInfo const&) = delete;
+  void operator=(PersistentInfo const&) = delete;
+private:
+  PersistentInfo(){}
+  UpgradeManager upgrades;
 };
 
 class Player : public AnimatedSprite{
@@ -172,6 +203,9 @@ public:
   void useItem();
   void addToInventory(ItemType type);
   void changeCurrency(int num);
+  void showPopup(std::string message);
+  void disablePopup();
+  bool getPopup();
   
 private:
   std::vector<COLLIDER> colliders;
@@ -181,6 +215,7 @@ private:
   int _combo = 0;
   bool _charging;
   float _chargeTime;
+  float _timeToCharge;
   bool _chargeDelay, _fullCharge;
   void createArrow();
   bool arrowDelay = false;
@@ -219,6 +254,8 @@ private:
   
   RevivalPoint revivalPoint;
   Inventory* inventory;
+  
+  bool _popup;
   
 };
 

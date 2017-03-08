@@ -173,6 +173,12 @@ void GameLoop::loop() {
       currState = &playState;
     }
     
+    if(StateTransition::getInstance()->getCurrentGameState() == game_play_no_tut){
+      playState.setMap("Map 1-1", &graphics);
+      currState = &playState;
+      StateTransition::getInstance()->setCurrentGameState(game_play);
+    }
+    
     
     if(frames == 0){
       startTime = SDL_GetTicks();

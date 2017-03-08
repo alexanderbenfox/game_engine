@@ -123,6 +123,10 @@ void Graphics::blitSurfaceRenderText(std::string text, const char* fontLoc, int 
   
 }
 
+void Graphics::getTextSize(int *width, int *height, std::string message){
+  TTF_SizeText(font, message.c_str(), width, height);
+}
+
 void Graphics::fillScreen(SDL_Color color){
   SDL_SetRenderDrawColor(_renderer, color.r, color.g, color.b, color.a);
   SDL_RenderClear(_renderer);

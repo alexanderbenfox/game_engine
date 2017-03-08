@@ -80,3 +80,44 @@ void Currency::onPickup(Player *player){
   player->changeCurrency(1);
 }
 
+
+ChargeSpeedUpgrade::ChargeSpeedUpgrade(Graphics &graphics, float x, float y) : Pickup(graphics, "sprites/chargespeedupgrade.png", 1,1,x,y,32*SPRITE_SCALE,32*SPRITE_SCALE)
+{
+  x_ = x;
+  y_ = y;
+  _stopped = false;
+  _grounded = false;
+}
+
+void ChargeSpeedUpgrade::update(float dt, Player *player){
+  Pickup::updateNoMovement(dt, player);
+}
+void ChargeSpeedUpgrade::draw(Graphics &graphics){
+  Pickup::draw(graphics);
+}
+void ChargeSpeedUpgrade::onPickup(Player *player){
+  player->showPopup("Charge speed doubled!");
+  PersistentInfo::getUpgrades()->acquireChargeSpeed();
+}
+
+
+MessagePopup::MessagePopup(Graphics &graphics, float x, float y) : Pickup(graphics, "sprites/chargespeedupgrade.png", 1,1,x,y,64*SPRITE_SCALE,64*SPRITE_SCALE)
+{
+  x_ = x;
+  y_ = y;
+  _stopped = false;
+  _grounded = false;
+}
+
+void MessagePopup::update(float dt, Player *player){
+  Pickup::updateNoMovement(dt, player);
+}
+void MessagePopup::draw(Graphics &graphics){}
+void MessagePopup::onPickup(Player *player){
+  player->showPopup(message);
+}
+
+void MessagePopup::setMessage(std::string m){
+  message = m;
+}
+

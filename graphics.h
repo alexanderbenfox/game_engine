@@ -29,6 +29,7 @@ public:
   void blitSurface(SDL_Rect* srcRect, SDL_Rect* destRect, SDL_Texture* srcTexture, double angle = 0, const SDL_Point* = NULL,SDL_RendererFlip flip = SDL_FLIP_NONE);
   void blitSurfaceIgnoreCamera(SDL_Rect* srcRect, SDL_Rect* destRect, SDL_Texture* srcTexture, double angle = 0, const SDL_Point* = NULL,SDL_RendererFlip flip = SDL_FLIP_NONE);
   void blitSurfaceRenderText(std::string text, const char* fontLoc, int size, SDL_Color color, Vector2 position);
+  void getTextSize(int* width, int* height, std::string message);
 
   void render();
   void clear();

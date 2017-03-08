@@ -66,11 +66,19 @@ Player::Player(Graphics &graphics, const std::string &filePath, int startX, int 
   _fullCharge = false;
   _shoot = false;
   _bufferShoot = false;
+  _popup = false;
   
 }
 
 void Player::update(float elapsedTime)
 {
+  if(PersistentInfo::getUpgrades()->getChargeSpeed()){
+    _timeToCharge = .2;
+  }
+  else{
+    _timeToCharge = .4;
+  }
+  
   AnimatedSprite::update(elapsedTime);  
   if(_dead){
     _chargeTime = 0;
@@ -145,7 +153,7 @@ void Player::update(float elapsedTime)
       _chargeDelay = false;
     }
     
-    if(_chargeTime > .4 && _fullCharge){
+    if(_chargeTime > _timeToCharge && _fullCharge){
       sfx.endSFX(CHARGE2);
       sfx.addSFX(CHARGED, this->getX()-22*_spriteScale, this->getY()-10*_spriteScale);
       sfx.addSFX(explosion, this->getX()-10*_spriteScale, this->getY()-10*_spriteScale);
@@ -585,7 +593,7 @@ void Player::handleOneWayCollisions(Map &map){
 void Player::handleEnemyCollisions(Map &map){
   std::vector<Enemy*> enemies = map.checkEnemyCollisions(_collider);
   for(Enemy* enemy : enemies){
-    if(!_invulnerable && !enemy->isDead() && !enemy->isPlayingDeathAnimation())
+    if(!_invulnerable && !enemy->isDead() && !enemy->isPlayingDeathAnimation() && !enemy->nonDamaging)
       enemy->collidePlayer(this);
   }
   
@@ -669,7 +677,7 @@ void Player::createArrow(){
   int x = getX()+10;
   if(_flipped)
     x = getX() - 32-10;
-  if(_chargeTime <= 0.4){
+  if(_chargeTime <= _timeToCharge){
     Arrow arrow(*_graphics, "sprites/arrow.png",1 ,1, x, y, 32, 64, !_flipped);
     arrows.push_back(arrow);
   }
@@ -784,4 +792,18 @@ void Player::changeCurrency(int num){
   if(num == 1){
     sfx.addSFX(drop, this->getX(), this->getY()+32*SPRITE_SCALE);
   }
+}
+
+void Player::showPopup(std::string message){
+  hud.message(message);
+  _popup = true;
+}
+
+void Player::disablePopup(){
+  hud.disablePopup();
+  _popup = false;
+}
+
+bool Player::getPopup(){
+  return _popup;
 }

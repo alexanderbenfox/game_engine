@@ -15,6 +15,7 @@ Enemy::Enemy(Graphics &graphics, const std::string &filePath, int startX, int st
   _actionTimer = 0;
   _knockBackSlow = 13;
   cannotBeDamaged = false;
+  nonDamaging = false;
   
   _scale = 2;
   _spriteScale = 2;
@@ -404,7 +405,7 @@ void Spitter::update(float dt, Player &player){
     
     _reloadTime -= dt;
     
-    if(_reloadTime <= 0){
+    if(_reloadTime <= 0 && !_stationary){
       _attacking = true;
       _actionTimer = this->getAnimationTime("Attack");
       _reloadTime = _reloadTimeMax;

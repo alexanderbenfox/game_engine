@@ -16,6 +16,7 @@ Fodder::Fodder(Graphics &graphics, Vector2 spawnPoint) : Enemy(graphics, "sprite
 }
 void Fodder::update(float dt, Player &player){
   Enemy::update(dt, player);
+  Enemy::setDeathAnim();
   
   if(_actionTimer <= 0){
     Enemy::setDeathAnim();
@@ -28,6 +29,8 @@ void Fodder::update(float dt, Player &player){
       _dx = 0;
     }
     _actionTimer -= dt;
+    if(_currentAnimationDone)
+      _actionTimer = 0;
     if(_actionTimer <= 0 && _death){
       _dead = true;
     }
@@ -204,5 +207,70 @@ void FireballHazard::setupAnimations(){
   this->addAnimation(.02, 3, 0, 0, "Up", 32, 64, Vector2(0,-32),"main");
   
   this->playAnimation("Up");
+}
+
+
+Chest::Chest(){}
+
+Chest::Chest(Graphics &graphics, Vector2 spawnPoint) : Enemy(graphics, "sprites/chest-sheet.png", 1, 1,spawnPoint.x, spawnPoint.y ,48, 48)
+{
+  _spawnPoint = Vector2(spawnPoint);
+  setupAnimations();
+  nonDamaging = true;
+  
+  COLLIDER normal = {.width = (int)(48*_scale), .height = (int)(48*_scale), .offset = Vector2(0,0)};
+  cur_collider = normal;
+  
+  _maxHealth = 1;
+  _currentHealth = _maxHealth;
+  
+}
+void Chest::update(float dt, Player &player){
+  Enemy::update(dt, player);
+  if(_actionTimer <= 0){
+    Enemy::setDeathAnim();
+  }
+  else{
+    if(_death){
+      _knockBack = false;
+      this->playAnimation("Death", true);
+      _dx = 0;
+    }
+    _actionTimer -= dt;
+    if(_actionTimer <= 0 && _death){
+      _dead = true;
+    }
+  }
+}
+void Chest::draw (Graphics &graphics){
+  Enemy::draw(graphics);
+}
+void Chest::playerCollision(Player* player){
+  player->changeHealth(-1);
+}
+
+void Chest::handleRightCollision(Rectangle tile){
+  Enemy::handleRightCollision(tile);
+}
+
+void Chest::handleLeftCollision(Rectangle tile){
+  Enemy::handleLeftCollision(tile);
+}
+void Chest::handleUpCollision(Rectangle tile){
+  Enemy::handleUpCollision(tile);
+}
+void Chest::handleDownCollision(Rectangle tile){
+  Enemy::handleDownCollision(tile);
+}
+
+void Chest::applyGravity(float dt){
+  _dy += (GRAVITY*dt);
+}
+
+void Chest::setupAnimations(){
+  this->addAnimation(.02,1,0,0,"Idle",48,48,Vector2(0,0),"main");
+  this->addAnimation(.02, 3, 0, 0, "Death", 48, 48, Vector2(0,0),"main");
+  
+  this->playAnimation("Idle");
 }
 

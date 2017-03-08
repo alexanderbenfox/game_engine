@@ -54,6 +54,7 @@ public:
   bool IsDamagable(float centerX);
   
   bool cannotBeDamaged;
+  bool nonDamaging;
   
   
   COLLIDER cur_collider;
@@ -360,6 +361,26 @@ class FireballHazard : public Enemy{
 public:
   FireballHazard();
   FireballHazard(Graphics &graphics, Vector2 spawnPoint);
+  void update(float dt, Player &player);
+  void draw (Graphics &graphics);
+  void playerCollision(Player* player);
+  
+  void handleRightCollision(Rectangle tile);
+  void handleLeftCollision(Rectangle tile);
+  void handleUpCollision(Rectangle tile);
+  void handleDownCollision(Rectangle tile);
+  
+  void applyGravity(float dt);
+  bool facingRight, facingLeft, facingUp, facingDown;
+  
+protected:
+  void setupAnimations();
+};
+
+class Chest : public Enemy{
+public:
+  Chest();
+  Chest(Graphics &graphics, Vector2 spawnPoint);
   void update(float dt, Player &player);
   void draw (Graphics &graphics);
   void playerCollision(Player* player);

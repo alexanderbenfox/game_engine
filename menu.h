@@ -9,7 +9,7 @@
 class Graphics;
 
 enum MenuType{
-  New, Load
+  New, NewNoTut, Load
 };
 
 class MenuItem{

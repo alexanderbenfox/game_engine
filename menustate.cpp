@@ -2,8 +2,9 @@
 #include "conf.h"
 #include "menu.h"
 
-StartMenuState::StartMenuState() : startMenu(Menu(1, 2, WINDOW_WIDTH/3, 0, WINDOW_WIDTH/3, WINDOW_HEIGHT)){
+StartMenuState::StartMenuState() : startMenu(Menu(1, 3, WINDOW_WIDTH/3, 0, WINDOW_WIDTH/3, WINDOW_HEIGHT)){
   startMenu.addMenuItem("New", New);
+  startMenu.addMenuItem("New (No Tutorial)", NewNoTut);
   startMenu.addMenuItem("Load", Load);
 };
 

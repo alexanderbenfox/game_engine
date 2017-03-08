@@ -7,6 +7,9 @@ void MenuItem::handleInput(Input &input){
     if(this->_type == New){
       StateTransition::getInstance()->setCurrentGameState(game_play);
     }
+    if(this->_type == NewNoTut){
+      StateTransition::getInstance()->setCurrentGameState(game_play_no_tut);
+    }
   }
 }
 
@@ -41,19 +44,19 @@ Menu::~Menu(){
 }
 
 void Menu::handleInput(Input &input){
-  if(input.keyIsHeld(SDL_SCANCODE_UP)){
+  if(input.keyWasPressed(SDL_SCANCODE_UP)){
     if(_cursorY > 0)
       _cursorY -= 1;
   }
-  if(input.keyIsHeld(SDL_SCANCODE_DOWN)){
+  if(input.keyWasPressed(SDL_SCANCODE_DOWN)){
     if(_cursorY < _rows-1)
       _cursorY += 1;
   }
-  if(input.keyIsHeld(SDL_SCANCODE_LEFT)){
+  if(input.keyWasPressed(SDL_SCANCODE_LEFT)){
     if(_cursorX > 0)
       _cursorX -= 1;
   }
-  if(input.keyIsHeld(SDL_SCANCODE_RIGHT)){
+  if(input.keyWasPressed(SDL_SCANCODE_RIGHT)){
     if(_cursorX < _columns-1)
       _cursorX += 1;
   }

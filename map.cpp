@@ -600,6 +600,34 @@ void Map::LoadObjects(int *mapNode, Graphics &graphics)
         
       }
       
+      if(strcmp(objName, "pickups") == 0){
+        XMLElement* item = objectGroup->FirstChildElement("object");
+        while(item != NULL){
+          int x = std::ceil(item->FloatAttribute("x")) * SPRITE_SCALE;
+          int y = std::ceil(item->FloatAttribute("y")) * SPRITE_SCALE;
+          
+          const char* name = item->Attribute("name");
+          
+          if(strcmp(name,"ChargeUpgrade") == 0){
+            if(!PersistentInfo::getUpgrades()->getChargeSpeed())
+              _items.push_back(new ChargeSpeedUpgrade(graphics,x,y));
+          }
+          
+          if(strcmp(name,"Message") == 0){
+            MessagePopup* m = new MessagePopup(graphics,x,y);
+            if(item->FirstChildElement("properties") != NULL){
+              XMLElement* prop = item->FirstChildElement("properties")->FirstChildElement("property");
+              const char* message = prop->Attribute("value");
+              m->setMessage(message);
+              _items.push_back(m);
+            }
+          }
+          
+          item = item ->NextSiblingElement("object");
+        }
+        
+      }
+      
       if(strncmp(objName, "spawn points",5) == 0)
       {
         XMLElement* spawn = objectGroup->FirstChildElement("object");
@@ -666,7 +694,16 @@ void Map::LoadObjects(int *mapNode, Graphics &graphics)
             
           }
           if(strcmp(enemyType, "Spitter") == 0){
-            _enemies.push_back(new Spitter(graphics,Vector2(x,y)));
+            Enemy* spitter = new Spitter(graphics,Vector2(x,y));
+            if(enemy->FirstChildElement("properties") != NULL){
+              XMLElement* prop = enemy->FirstChildElement("properties")->FirstChildElement("property");
+              const char* type = prop->Attribute("value");
+              
+              if(strcmp(type, "Stationary") == 0)
+                spitter->setStationary();
+            }
+            
+            _enemies.push_back(spitter);
             
           }
           if(strcmp(enemyType, "SmallSpitter") == 0){
@@ -748,6 +785,10 @@ void Map::LoadObjects(int *mapNode, Graphics &graphics)
           
           if(strcmp(enemyType, "FireballHazard") == 0){
             _enemies.push_back(new FireballHazard(graphics, Vector2(x,y)));
+          }
+          
+          if(strcmp(enemyType, "Chest") == 0){
+            _enemies.push_back(new Chest(graphics, Vector2(x,y)));
           }
           
           enemy = enemy->NextSiblingElement("object");

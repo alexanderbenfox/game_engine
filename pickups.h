@@ -47,4 +47,29 @@ public:
   void onPickup(Player *player);
 };
 
+class ChargeSpeedUpgrade : public Pickup{
+public:
+  ChargeSpeedUpgrade(){}
+  ChargeSpeedUpgrade(Graphics &graphics, float x, float y);
+  
+  void update(float dt, Player *player);
+  void draw(Graphics &graphics);
+  void onPickup(Player *player);
+};
+
+class MessagePopup : public Pickup{
+public:
+  MessagePopup(){}
+  MessagePopup(Graphics &graphics, float x, float y);
+  
+  void update(float dt, Player *player);
+  void draw(Graphics &graphics);
+  void onPickup(Player *player);
+  
+  void setMessage(std::string m);
+  
+private:
+  std::string message = "";
+};
+
 #endif

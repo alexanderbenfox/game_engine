@@ -9,7 +9,7 @@
 #include "menu.h"
 
 enum state{
-  game_play, start_menu
+  game_play, game_play_no_tut, start_menu
 };
 
 class StateTransition{
@@ -45,6 +45,8 @@ public:
   void update(float dt, Graphics *graphics);
   void draw(Graphics *graphics);
   void processInput(Input &input);
+  
+  void setMap(std::string name, Graphics *graphics);
 private:
   Player player;
   Map map;

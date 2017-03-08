@@ -16,3 +16,7 @@ void TextRender::RenderTextOnScreen(Graphics &graphics, std::string message, int
   std::string filePath = "content/fonts/pixel-font.ttf";
   graphics.blitSurfaceRenderText(message, filePath.c_str(), size, cSDL, position);
 }
+
+void TextRender::GetTextSize(Graphics &graphics, int *width, int *height, std::string message){
+  graphics.getTextSize(width, height, message);
+}

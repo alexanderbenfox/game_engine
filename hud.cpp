@@ -30,6 +30,10 @@ void CurrencyUI::update(float dt, Player *player){
   num = player->getInventory()->getCurrency();
 }
 
+void PopupBox::update(float dt, Player *player){
+  
+}
+
 HUD::HUD(){
   
 }
@@ -84,6 +88,16 @@ HUD::HUD(Graphics &graphics){
   currency.graphic._spriteScale = 2;
   _currencyUI = currency;
   
+  PopupBox popup;
+  popup.posX = WINDOW_WIDTH*(1/3);
+  popup.posY = WINDOW_HEIGHT*(1/3);
+  popup.width = WINDOW_WIDTH/3;
+  popup.height = WINDOW_HEIGHT/3;
+  popup.graphic = Sprite(graphics, "sprites/popupbox.png", 0,0,1,1,WINDOW_WIDTH/3,WINDOW_HEIGHT/3);
+  popup.graphic.setHUD();
+  popup.Disable();
+  _popup = popup;
+  
 }
 
 void HUD::update(float dt, Player* player){
@@ -99,4 +113,15 @@ void HUD::draw(Graphics &graphics){
   _bossHealthBar.draw(graphics);
   _itemUI.draw(graphics);
   _currencyUI.draw(graphics);
+  if(_popup.enabled)
+    _popup.draw(graphics);
+}
+
+void HUD::message(std::string text){
+  _popup.setMessage(text);
+  _popup.Enable();
+}
+
+void HUD::disablePopup(){
+  _popup.Disable();
 }

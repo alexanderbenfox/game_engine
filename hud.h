@@ -54,6 +54,35 @@ struct CurrencyUI : Component{
   }
 };
 
+struct PopupBox : Component{
+  std::string message;
+  int width, height;
+  bool enabled;
+  void update(float dt, Player* player);
+  void draw(Graphics &graphics){
+    posX = WINDOW_WIDTH/3;
+    posY = WINDOW_HEIGHT/3;
+    int w,h;
+    TextRender::GetTextSize(graphics, &w, &h, message);
+    graphic.draw(graphics, posX, posY);
+    float x = posX + width/2 - w/2;
+    float y = posY+height/2- h/2;
+    TextRender::RenderTextOnScreen(graphics, message, 30*SPRITE_SCALE, white, Vector2(x,y));
+  }
+  
+  void Enable(){
+    enabled = true;
+  }
+  
+  void Disable(){
+    enabled = false;
+  }
+  
+  void setMessage(std::string m){
+    message = m;
+  }
+};
+
 struct BossHealthBar : Component{
   int max;
   int current;
@@ -80,12 +109,16 @@ public:
   void update(float dt, Player* player);
   void draw(Graphics &graphics);
   
+  void message(std::string text);
+  void disablePopup();
+  
 private:
   std::vector<Component> _components;
   HealthBar _healthBar;
   BossHealthBar _bossHealthBar;
   ItemUI _itemUI;
   CurrencyUI _currencyUI;
+  PopupBox _popup;
 };
 
 #endif

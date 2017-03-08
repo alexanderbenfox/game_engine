@@ -5,7 +5,7 @@ PlayState::PlayState(Graphics *graphics){
   camera.w = WINDOW_WIDTH;
   camera.h = WINDOW_HEIGHT;
   
-  this->map = Map("Map 7",*graphics);
+  this->map = Map("tut1",*graphics);
   Vector2 spawnPoint = map.getPlayerSpawnPoint();
   
   this->player = Player(*graphics, "sprites/playerspritesheett.png",1 ,1, spawnPoint.x-32, spawnPoint.y - 60, 64, 32);
@@ -13,6 +13,13 @@ PlayState::PlayState(Graphics *graphics){
   player.setCamera(&camera, map.getSize(), true);
   player.changeRevivalPoint("Map 1-1", spawnPoint);
   pauseTime = 0;
+}
+
+void PlayState::setMap(std::string name, Graphics *graphics){
+  this->map.deleteMap();
+  this->map = Map(name, *graphics);
+  player.setX(map.getPlayerSpawnPoint().x);
+  player.setY(map.getPlayerSpawnPoint().y);
 }
 
 void PlayState::processInput(Input &input){
@@ -61,6 +68,8 @@ void PlayState::processInput(Input &input){
   
   if(input.keyWasPressed(SDL_SCANCODE_RETURN)){
     player.reset(this->map);
+    if(player.getPopup())
+      player.disablePopup();
   }
   
   if(input.keyWasPressed(SDL_SCANCODE_W)){
@@ -88,9 +97,11 @@ void PlayState::update(float dt, Graphics *graphics){
       pauseTime -= (1);
     }
     else{
-      player.update(dt);
-      player.applyGravity(dt);
-      player.handleCollisions(map);
+      if(!player.getPopup()){
+        player.update(dt);
+        player.applyGravity(dt);
+        player.handleCollisions(map);
+      }
       
       //transition to another room
       if (player.handleDoorCollisions(map) && transitionMap){
