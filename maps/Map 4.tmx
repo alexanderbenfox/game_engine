@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.0" orientation="orthogonal" renderorder="right-down" width="40" height="16" tilewidth="32" tileheight="32" nextobjectid="122">
  <tileset firstgid="1" name="stage1_tilesheet" tilewidth="32" tileheight="32" tilecount="256">
-  <image source="/Users/alex/GithubProjects/game_engine/content/tilesets/stage1_tilesheet.png" width="512" height="512"/>
+  <image source="../content/tilesets/stage1_tilesheet.png" width="512" height="512"/>
  </tileset>
  <layer name="background" width="40" height="16">
   <data>
@@ -1070,9 +1070,9 @@
    <tile gid="112"/>
    <tile gid="96"/>
    <tile gid="78"/>
-   <tile gid="113"/>
-   <tile gid="2"/>
-   <tile gid="2"/>
+   <tile gid="0"/>
+   <tile gid="119"/>
+   <tile gid="120"/>
    <tile gid="2"/>
    <tile gid="2"/>
    <tile gid="2"/>
@@ -1109,8 +1109,8 @@
    <tile gid="64"/>
    <tile gid="94"/>
    <tile gid="94"/>
-   <tile gid="113"/>
-   <tile gid="114"/>
+   <tile gid="119"/>
+   <tile gid="120"/>
    <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="81"/>
@@ -1945,7 +1945,7 @@
   <object id="108" x="1120" y="128" width="32" height="32"/>
   <object id="109" x="1152" y="0" width="64" height="160"/>
   <object id="111" x="1024" y="256" width="224" height="128"/>
-  <object id="113" x="704" y="320" width="256" height="64"/>
+  <object id="113" x="768" y="320" width="192" height="64"/>
   <object id="114" x="544" y="256" width="96" height="24"/>
  </objectgroup>
  <objectgroup color="#00ff00" name="spawn points">
@@ -1954,8 +1954,8 @@
   </object>
  </objectgroup>
  <objectgroup name="slopes">
-  <object id="76" x="704" y="320">
-   <polyline points="0,0 -64,64"/>
+  <object id="76" x="768" y="320">
+   <polyline points="0,0 -128,64"/>
   </object>
   <object id="80" x="480" y="352">
    <polyline points="0,0 -64,32"/>

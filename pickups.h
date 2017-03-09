@@ -2,6 +2,7 @@
 #define PICKUPS_H
 
 #include "animatedsprite.h"
+#include "slope.h"
 
 class Player;
 
@@ -14,6 +15,8 @@ public:
   
   virtual void onPickup(Player *player) = 0;
   void checkPickedUp(Player *player);
+  
+  void stop();
   
   Rectangle getCollider(){
     return Rectangle(x_, y_, _width, _height);

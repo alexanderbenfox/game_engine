@@ -58,8 +58,8 @@ void Map::loadMap(std::string mapName, Graphics &graphics){
   XMLDocument doc;
   std::stringstream ss;
   
-  //ss << "maps/" << mapName << ".tmx";
-  ss << "/Users/alex/GithubProjects/game_engine/maps/" << mapName << ".tmx";
+  ss << "maps/" << mapName << ".tmx";
+  //ss << "/Users/alex/GithubProjects/game_engine/maps/" << mapName << ".tmx";
   const char* map_file_name = ss.str().c_str();
   FILE* mapFile;
   mapFile = fopen(map_file_name, "r");
@@ -142,6 +142,15 @@ void Map::handlePickupCollisions(Pickup* item){
           break;
       }
     }
+  }
+  std::vector<Slope> slopes = checkSlopeCollisions(itemCol);
+  for (int i = 0; i < slopes.size(); i++){
+    int b = (slopes.at(i).getP1().y - (slopes.at(i).getSlope() * std::abs(slopes.at(i).getP1().x)));
+    int centerX = item->getX();
+    int newY = (slopes.at(i).getSlope() * centerX) + b;
+    bool isAbove = (item->getY()) < (newY-8);
+    if(!isAbove)
+      item->stop();
   }
 }
 
@@ -321,6 +330,9 @@ void Map::LoadTilesets(int* mapNode, Graphics &graphics)
     {
       int firstGID;
       const char* source = pTileset->FirstChildElement("image")->Attribute("source");
+      //remove first 3 characters
+      source = source + 3;
+      
       char* path;
       
       std::stringstream ss;

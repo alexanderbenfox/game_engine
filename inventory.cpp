@@ -22,8 +22,8 @@ HealingFlask::HealingFlask(Graphics &graphics)
   _graphic = Sprite(graphics, "sprites/healingflask.png", 0, 0, 1, 1, 32, 32);
   _graphic.setHUD();
   _graphic._spriteScale = 2;
-  _numInInventory = 5;
-  _capacity = 5;
+  _numInInventory = 2;
+  _capacity = 2;
   _type = flask;
 }
 

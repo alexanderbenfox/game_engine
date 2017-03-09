@@ -59,6 +59,10 @@ void Pickup::updateNoMovement(float dt, Player *player){
   checkPickedUp(player);
 }
 
+void Pickup::stop(){
+  _stopped = true;
+}
+
 Currency::Currency(Graphics &graphics, float x, float y) : Pickup(graphics,"sprites/currency.png",1,1,x,y,8,8){
   x_ = x;
   y_ = y;

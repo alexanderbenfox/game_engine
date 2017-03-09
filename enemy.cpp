@@ -776,7 +776,7 @@ SwordMan::SwordMan(Graphics &graphics, Vector2 spawnPoint) : Enemy(graphics, "sp
   COLLIDER normal = {.width = (int)(32*_scale), .height = (int)(64*_scale), .offset = Vector2(0,0)};
   cur_collider = normal;
   
-  _maxHealth = 16;
+  _maxHealth = 18;
   _currentHealth = _maxHealth;
   
 }
