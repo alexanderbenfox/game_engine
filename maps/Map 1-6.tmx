@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="40" height="15" tilewidth="32" tileheight="32" nextobjectid="151">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="40" height="15" tilewidth="32" tileheight="32" nextobjectid="167">
  <tileset firstgid="1" name="stage1_tilesheet" tilewidth="32" tileheight="32" tilecount="256">
   <image source="/Users/alex/GithubProjects/game_engine/content/tilesets/stage1_tilesheet.png" width="512" height="512"/>
  </tileset>
@@ -2226,11 +2226,11 @@
    <tile gid="116"/>
    <tile gid="0"/>
    <tile gid="0"/>
-   <tile gid="0"/>
-   <tile gid="113"/>
-   <tile gid="129"/>
-   <tile gid="116"/>
-   <tile gid="0"/>
+   <tile gid="119"/>
+   <tile gid="120"/>
+   <tile gid="2"/>
+   <tile gid="103"/>
+   <tile gid="104"/>
    <tile gid="0"/>
    <tile gid="0"/>
    <tile gid="194"/>
@@ -2431,7 +2431,6 @@
   <object id="127" x="608" y="288" width="128" height="32"/>
   <object id="128" x="480" y="224" width="96" height="32"/>
   <object id="129" x="512" y="160" width="32" height="64"/>
-  <object id="131" x="352" y="320" width="32" height="32"/>
   <object id="132" x="32" y="256" width="96" height="96"/>
   <object id="133" x="0" y="32" width="32" height="320"/>
   <object id="134" x="320" y="32" width="32" height="128"/>
@@ -2442,6 +2441,7 @@
   <object id="140" x="1120" y="128" width="128" height="32"/>
   <object id="141" x="1136" y="160" width="112" height="24"/>
   <object id="142" x="1216" y="32" width="32" height="96"/>
+  <object id="166" x="352" y="320" width="32" height="32"/>
  </objectgroup>
  <objectgroup name="onewayplatform">
   <object id="150" x="416" y="256" width="32"/>
@@ -2453,17 +2453,17 @@
   <object id="143" x="416" y="96">
    <polyline points="0,0 32,32"/>
   </object>
-  <object id="144" x="384" y="320">
-   <polyline points="0,0 32,32"/>
-  </object>
-  <object id="145" x="352" y="320">
-   <polyline points="0,0 -32,32"/>
-  </object>
   <object id="146" x="128" y="256">
    <polyline points="0,0 96,96"/>
   </object>
   <object id="149" x="1024" y="192">
    <polyline points="0,0 64,64"/>
+  </object>
+  <object id="164" x="288" y="352">
+   <polyline points="0,0 64,-32"/>
+  </object>
+  <object id="165" x="384" y="320">
+   <polyline points="0,0 64,32"/>
   </object>
  </objectgroup>
  <objectgroup name="doors">
@@ -2486,5 +2486,17 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup name="enemies"/>
+ <objectgroup name="enemies">
+  <object id="156" name="Fodder" x="1120" y="96" width="32" height="32"/>
+  <object id="157" name="Fodder" x="1120" y="64" width="32" height="32"/>
+  <object id="158" name="SmallSpitter" x="944" y="136">
+   <properties>
+    <property name="Type" value="Stationary"/>
+   </properties>
+  </object>
+  <object id="159" name="SwordMan" x="224" y="296"/>
+  <object id="160" name="Walker" x="176" y="248"/>
+  <object id="161" name="Walker" x="208" y="248"/>
+  <object id="163" name="Headless" x="1008" y="296"/>
+ </objectgroup>
 </map>

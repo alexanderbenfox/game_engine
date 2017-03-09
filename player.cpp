@@ -766,6 +766,7 @@ void Player::reset(Map &map){
 void Player::changeRevivalPoint(std::string mapName, Vector2 location){
   this->revivalPoint.map = mapName;
   this->revivalPoint.point = location;
+  inventory->refillItem(flask);
 }
 
 void Player::revive(Map &map){

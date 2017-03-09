@@ -623,6 +623,24 @@ void Map::LoadObjects(int *mapNode, Graphics &graphics)
             }
           }
           
+          if(strcmp(name,"HealthUpgrade") == 0){
+            if(!PersistentInfo::getUpgrades()->checkForMap(this->getMapName()))
+            {
+              HealthUpgrade* h = new HealthUpgrade(graphics,x,y);
+              h->setMap(this->getMapName());
+              _items.push_back(h);
+            }
+          }
+          
+          if(strcmp(name,"HealthFlaskUpgrade") == 0){
+            if(!PersistentInfo::getUpgrades()->checkForMapFlask(this->getMapName()))
+            {
+              HealthFlaskUpgrade* h = new HealthFlaskUpgrade(graphics,x,y);
+              h->setMap(this->getMapName());
+              _items.push_back(h);
+            }
+          }
+          
           item = item ->NextSiblingElement("object");
         }
         

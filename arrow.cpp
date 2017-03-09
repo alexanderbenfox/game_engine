@@ -125,7 +125,7 @@ void Arrow::handleEnemyCollisions(Map &map){
       bool isDamagable = enemy->IsDamagable(_collider.getCenterX());
       if (!enemy->isPlayingDeathAnimation() && isDamagable && !enemy->cannotBeDamaged){
         tiles.push_back(enemy->getCollider());
-        enemy->changeHealth(-1);
+        enemy->changeHealth(-2);
       }
       if(!isDamagable){
         done = true;

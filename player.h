@@ -55,6 +55,8 @@ struct CameraOffset{
 class UpgradeManager{
 private:
   bool _doubleJump, _glide, _airDodge, _chargeSpeed;
+  std::vector<std::string> healthPickupMaps;
+  std::vector<std::string> healthFlaskMaps;
 public:
   UpgradeManager(){
     _doubleJump = false;
@@ -69,6 +71,33 @@ public:
   
   void acquireChargeSpeed(){
     _chargeSpeed = true;
+  }
+  
+  void addToHealthPickups(std::string map){
+    healthPickupMaps.push_back(map);
+  }
+  
+  void addToHealthFlaskPickups(std::string map){
+    healthFlaskMaps.push_back(map);
+  }
+  
+  bool checkForMap(std::string map){
+    bool foundInUpgrades = false;
+    for(int i = 0; i<healthPickupMaps.size(); i++){
+      if(healthPickupMaps.at(i) == map){
+        foundInUpgrades = true;
+      }
+    }
+    return foundInUpgrades;
+  }
+  bool checkForMapFlask(std::string map){
+    bool foundInUpgrades = false;
+    for(int i = 0; i<healthFlaskMaps.size(); i++){
+      if(healthFlaskMaps.at(i) == map){
+        foundInUpgrades = true;
+      }
+    }
+    return foundInUpgrades;
   }
   
 };
@@ -159,6 +188,10 @@ public:
   
   int _hp = 10;
   int _hpMax = 10;
+  
+  void changeMaxHP(int n){
+    _hpMax += n;
+  }
   
   bool touchedMovingPlatform = false;
   void movingPlatformStuff(Rectangle tile, float dx){

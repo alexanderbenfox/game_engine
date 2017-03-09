@@ -100,6 +100,62 @@ void ChargeSpeedUpgrade::onPickup(Player *player){
   PersistentInfo::getUpgrades()->acquireChargeSpeed();
 }
 
+HealthUpgrade::HealthUpgrade(Graphics &graphics, float x, float y) : Pickup(graphics, "sprites/healthupgrade.png", 1,1,x,y,32*SPRITE_SCALE,32*SPRITE_SCALE)
+{
+  x_ = x;
+  y_ = y;
+  _stopped = false;
+  _grounded = false;
+}
+
+void HealthUpgrade::update(float dt, Player *player){
+  Pickup::updateNoMovement(dt, player);
+}
+void HealthUpgrade::draw(Graphics &graphics){
+  Pickup::draw(graphics);
+}
+void HealthUpgrade::onPickup(Player *player){
+  player->showPopup("You've grown in strength!");
+  player->changeMaxHP(2);
+  PersistentInfo::getUpgrades()->addToHealthPickups(_map);
+}
+
+void HealthUpgrade::setMap(std::string map){
+  _map = map;
+}
+std::string HealthUpgrade::getMap(){
+  return _map;
+}
+
+HealthFlaskUpgrade::HealthFlaskUpgrade(Graphics &graphics, float x, float y) : Pickup(graphics, "sprites/healingflask.png", 1,1,x,y,32*SPRITE_SCALE,32*SPRITE_SCALE)
+{
+  x_ = x;
+  y_ = y;
+  _stopped = false;
+  _grounded = false;
+}
+
+void HealthFlaskUpgrade::update(float dt, Player *player){
+  Pickup::updateNoMovement(dt, player);
+}
+void HealthFlaskUpgrade::draw(Graphics &graphics){
+  Pickup::draw(graphics);
+}
+void HealthFlaskUpgrade::onPickup(Player *player){
+  player->showPopup("You gained another health flask!");
+  player->getInventory()->addToFlaskCapacity(1);
+  player->getInventory()->refillItem(flask);
+  PersistentInfo::getUpgrades()->addToHealthFlaskPickups(_map);
+}
+
+void HealthFlaskUpgrade::setMap(std::string map){
+  _map = map;
+}
+
+std::string HealthFlaskUpgrade::getMap(){
+  return _map;
+}
+
 
 MessagePopup::MessagePopup(Graphics &graphics, float x, float y) : Pickup(graphics, "sprites/chargespeedupgrade.png", 1,1,x,y,64*SPRITE_SCALE,64*SPRITE_SCALE)
 {

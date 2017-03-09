@@ -39,6 +39,8 @@ public:
   int getNum();
   void addToInventory(int num);
   Sprite* getSprite();
+  
+  void addToCapacity(int num);
 };
 
 
@@ -51,6 +53,19 @@ public:
   void cycleCurrentItem();
   void switchItem(ItemType type);
   void addToInventory(ItemType item);
+  
+  void refillItem(ItemType item){
+    switch(item){
+      case flask:
+        _flask.addToInventory(99);
+        break;
+    }
+  }
+  
+  void addToFlaskCapacity(int n){
+    _flask.addToCapacity(n);
+  }
+  
   void changeCurrency(int num);
   int getCurrency();
 private:

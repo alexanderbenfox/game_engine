@@ -105,9 +105,9 @@ void SwordHitbox::handleEnemyCollisions(Map &map){
       bool isDamagable = enemy->IsDamagable(hitBoxStart);
       if (!enemy->isPlayingDeathAnimation() && isDamagable && !enemy->cannotBeDamaged){
         bool strong = (_currentHitbox.type == STANDING2);
-        enemy->changeHealth(-3);
+        enemy->changeHealth(-4);
         if(strong)
-          enemy->changeHealth(-2);
+          enemy->changeHealth(-3);
         
         enemy->knockBack(_currentHitbox.direction, strong);
         _currentHitbox.hitRegistered = true;

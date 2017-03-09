@@ -57,6 +57,38 @@ public:
   void onPickup(Player *player);
 };
 
+class HealthUpgrade : public Pickup{
+public:
+  HealthUpgrade(){}
+  HealthUpgrade(Graphics &graphics, float x, float y);
+  
+  void update(float dt, Player *player);
+  void draw(Graphics &graphics);
+  void onPickup(Player *player);
+  
+  void setMap(std::string map);
+  std::string getMap();
+  
+private:
+  std::string _map;
+};
+
+class HealthFlaskUpgrade : public Pickup{
+public:
+  HealthFlaskUpgrade(){}
+  HealthFlaskUpgrade(Graphics &graphics, float x, float y);
+  
+  void update(float dt, Player *player);
+  void draw(Graphics &graphics);
+  void onPickup(Player *player);
+  
+  void setMap(std::string map);
+  std::string getMap();
+  
+private:
+  std::string _map;
+};
+
 class MessagePopup : public Pickup{
 public:
   MessagePopup(){}

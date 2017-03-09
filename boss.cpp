@@ -52,7 +52,7 @@ Snake::Snake(Graphics &graphics, Vector2 spawnPoint, std::string filePath, Vecto
   cur_collider = normal;
   
   //_maxHealth = 100;
-  _maxHealth = 100;
+  _maxHealth = 140;
   _currentHealth = _maxHealth;
   _direction = -1;
   

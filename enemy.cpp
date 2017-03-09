@@ -270,7 +270,7 @@ Walker::Walker(Graphics &graphics, Vector2 spawnPoint) : Enemy(graphics, "sprite
   COLLIDER normal = {.width = (int)(28*_scale), .height = (int)(64*_scale), .offset = Vector2(0,0)};
   cur_collider = normal;
   
-  _maxHealth = 10;
+  _maxHealth = 12;
   _currentHealth = _maxHealth;
   
 }
@@ -651,7 +651,7 @@ Floater::Floater(Graphics &graphics, Vector2 spawnPoint) : Enemy(graphics, "spri
   COLLIDER normal = {.width = (int)(38*_scale), .height = (int)(38*_scale), .offset = Vector2(0,0)};
   cur_collider = normal;
   
-  _maxHealth = 2;
+  _maxHealth = 4;
   _currentHealth = _maxHealth;
   
   _dy = 0;
@@ -776,7 +776,7 @@ SwordMan::SwordMan(Graphics &graphics, Vector2 spawnPoint) : Enemy(graphics, "sp
   COLLIDER normal = {.width = (int)(32*_scale), .height = (int)(64*_scale), .offset = Vector2(0,0)};
   cur_collider = normal;
   
-  _maxHealth = 15;
+  _maxHealth = 16;
   _currentHealth = _maxHealth;
   
 }
@@ -1091,7 +1091,7 @@ Headless::Headless(Graphics &graphics, Vector2 spawnPoint) : Enemy(graphics, "sp
   COLLIDER normal = {.width = (int)(28*_scale), .height = (int)(64*_scale), .offset = Vector2(0,0)};
   cur_collider = normal;
   
-  _maxHealth = 10;
+  _maxHealth = 12;
   _currentHealth = _maxHealth;
   
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="27" height="45" tilewidth="32" tileheight="32" nextobjectid="235">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="27" height="45" tilewidth="32" tileheight="32" nextobjectid="249">
  <tileset firstgid="1" name="stage1_tilesheet" tilewidth="32" tileheight="32" tilecount="256">
   <image source="/Users/alex/GithubProjects/game_engine/content/tilesets/stage1_tilesheet.png" width="512" height="512"/>
  </tileset>
@@ -5017,5 +5017,28 @@
    </properties>
   </object>
  </objectgroup>
- <objectgroup name="enemies"/>
+ <objectgroup name="enemies">
+  <object id="235" name="Fodder" x="96" y="832" width="32" height="32"/>
+  <object id="236" name="Fodder" x="128" y="816" width="32" height="32"/>
+  <object id="237" name="Fodder" x="96" y="800" width="32" height="32"/>
+  <object id="238" name="Fodder" x="320" y="416" width="32" height="32"/>
+  <object id="239" name="Fodder" x="320" y="384" width="32" height="32"/>
+  <object id="240" name="Rat" x="208" y="592">
+   <properties>
+    <property name="Type" value="Stationary"/>
+   </properties>
+  </object>
+  <object id="241" name="Rat" x="144" y="1104">
+   <properties>
+    <property name="Type" value="Stationary"/>
+   </properties>
+  </object>
+  <object id="242" name="FloatFish" x="728" y="1040"/>
+  <object id="243" name="Floater" x="496" y="720"/>
+  <object id="244" name="Headless" x="416" y="280"/>
+  <object id="246" name="Walker" x="48" y="344"/>
+ </objectgroup>
+ <objectgroup name="pickups">
+  <object id="248" name="HealthFlaskUpgrade" x="384" y="528" width="32" height="32"/>
+ </objectgroup>
 </map>

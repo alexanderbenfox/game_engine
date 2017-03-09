@@ -49,6 +49,10 @@ void HealingFlask::addToInventory(int num){
   }
 }
 
+void HealingFlask::addToCapacity(int num){
+  _capacity += num;
+}
+
 Sprite* HealingFlask::getSprite(){
   return Item::getSprite();
 }
