@@ -1289,7 +1289,7 @@ void FloatFish::update(float dt, Player &player){
     _triggered = true;
   
   if(_triggered){
-    _dx = 500*_direction;
+    _dx = 600*_direction;
     _dy = (800)*sinf(lifetime);
   }
   

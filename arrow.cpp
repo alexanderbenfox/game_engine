@@ -159,6 +159,18 @@ void Arrow::handleEnemyCollisions(Map &map){
             
             _dx = (_dx < 0) ? 0 : _dx;
             break;
+          default:
+            this->setX(tile.getRight()-1 + 2);
+            _lifetime = 2.0;
+            _hitEnemy = true;
+            _useless = true;
+            if(_dx > 0)
+              sfx.addSFX(splatter, tile.getCenterX()-64 + 10, this->getCollider().getCenterY()-64, false);
+            else
+              sfx.addSFX(splatter, tile.getCenterX()-64 - 10, this->getCollider().getCenterY()-64, true);
+            
+            _dx = (_dx < 0) ? 0 : _dx;
+            break;
         }
       }
     }
