@@ -292,8 +292,8 @@ void Walker::update(float dt, Player &player){
       _colLeft = false;
     }
     
-    bool playerToTheRight = (player.getCollider().getCenterX() > (this->getX()+16 + 100));
-    bool playerToTheLeft = (player.getCollider().getCenterX() < (this->getX()+16 - 100));
+    bool playerToTheRight = (player.getCollider().getCenterX()-32*SPRITE_SCALE > (this->getX()+16 + 100));
+    bool playerToTheLeft = (player.getCollider().getCenterX()+32*SPRITE_SCALE < (this->getX()+16 - 100));
     
     if (playerToTheRight && _direction < 0)
       _direction = 1;
@@ -380,7 +380,7 @@ Spitter::Spitter(Graphics &graphics, Vector2 spawnPoint) : Enemy(graphics, "spri
   COLLIDER normal = {.width = (int)(28*_scale), .height = (int)(58*_scale), .offset = Vector2(0,0)};
   cur_collider = normal;
   
-  _maxHealth = 10;
+  _maxHealth = 5;
   _currentHealth = _maxHealth;
   
 }
@@ -510,7 +510,7 @@ SmallSpitter::SmallSpitter(Graphics &graphics, Vector2 spawnPoint) : Enemy(graph
   COLLIDER normal = {.width = (int)(28*_scale), .height = (int)(32*_scale), .offset = Vector2(0,0)};
   cur_collider = normal;
   
-  _maxHealth = 8;
+  _maxHealth = 5;
   _currentHealth = _maxHealth;
   
 }
@@ -944,7 +944,7 @@ SmallMage::SmallMage(Graphics &graphics, Vector2 spawnPoint) : Enemy(graphics, "
   COLLIDER normal = {.width = (int)(28*_scale), .height = (int)(32*_scale), .offset = Vector2(0,0)};
   cur_collider = normal;
   
-  _maxHealth = 8;
+  _maxHealth = 5;
   _currentHealth = _maxHealth;
   
 }
@@ -1273,8 +1273,8 @@ void FloatFish::update(float dt, Player &player){
   
   lifetime += .05;
   
-  bool playerToTheRight = (player.getCollider().getCenterX() > _collider.getCenterX());
-  bool playerToTheLeft = (player.getCollider().getCenterX() < (_collider.getCenterX()));
+  bool playerToTheRight = (player.getCollider().getCenterX()-128*SPRITE_SCALE > _collider.getCenterX());
+  bool playerToTheLeft = (player.getCollider().getCenterX()+128*SPRITE_SCALE < (_collider.getCenterX()));
   bool playerBelow = (player.getCollider().getCenterY() > (_collider.getCenterY()));
   
   bool threshold =(player.getCollider().getCenterY() > (_collider.getCenterY()-64*SPRITE_SCALE)) && (player.getCollider().getCenterY() < (_collider.getCenterY()+64*SPRITE_SCALE));
@@ -1289,7 +1289,7 @@ void FloatFish::update(float dt, Player &player){
     _triggered = true;
   
   if(_triggered){
-    _dx = 700*_direction;
+    _dx = 500*_direction;
     _dy = (800)*sinf(lifetime);
   }
   
@@ -1393,8 +1393,8 @@ void Rat::update(float dt, Player &player){
   applyGravity(dt);
   Enemy::setDeathAnim();
   
-  bool playerToTheRight = (player.getCollider().getCenterX() > (this->getX()+16));
-  bool playerToTheLeft = (player.getCollider().getCenterX() < (this->getX()+16));
+  bool playerToTheRight = (player.getCollider().getCenterX()-32*SPRITE_SCALE > (this->getX()+16));
+  bool playerToTheLeft = (player.getCollider().getCenterX()+32*SPRITE_SCALE < (this->getX()+16));
   
   bool withinStrikeZone =(player.getCollider().getCenterX() > (this->getX()-100*SPRITE_SCALE)) && (player.getCollider().getCenterX() < (this->getX()+100*SPRITE_SCALE));
   

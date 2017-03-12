@@ -1315,7 +1315,7 @@
  <objectgroup name="doors"/>
  <objectgroup name="onewayplatform"/>
  <objectgroup name="enemies">
-  <object id="107" name="SnakeBoss" x="272" y="280"/>
+  <object id="107" name="SnakeBoss" x="392" y="264" width="32" height="32"/>
  </objectgroup>
  <objectgroup name="movingplatform"/>
 </map>

@@ -2726,7 +2726,7 @@
  </objectgroup>
  <objectgroup name="enemies">
   <object id="167" name="Floater" x="216" y="192"/>
-  <object id="168" name="FloatFish" x="936" y="664"/>
+  <object id="168" name="FloatFish" x="1008" y="544" width="56" height="40"/>
   <object id="169" name="Walker" x="640" y="704"/>
   <object id="170" name="Walker" x="504" y="688"/>
   <object id="171" name="SmallMage" x="656" y="352">

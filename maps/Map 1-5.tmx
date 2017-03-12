@@ -3344,7 +3344,7 @@
  </objectgroup>
  <objectgroup name="enemies">
   <object id="150" name="FloatFish" x="440" y="440"/>
-  <object id="151" name="FloatFish" x="80" y="584" width="32" height="24"/>
+  <object id="151" name="FloatFish" x="64" y="1192" width="32" height="24"/>
   <object id="152" name="Floater" x="408" y="984"/>
   <object id="153" name="Spitter" x="408" y="1008"/>
   <object id="154" name="Fodder" x="352" y="272" width="32" height="32"/>

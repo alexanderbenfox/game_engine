@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="40" height="15" tilewidth="32" tileheight="32" nextobjectid="167">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="40" height="15" tilewidth="32" tileheight="32" nextobjectid="168">
  <tileset firstgid="1" name="stage1_tilesheet" tilewidth="32" tileheight="32" tilecount="256">
   <image source="../content/tilesets/stage1_tilesheet.png" width="512" height="512"/>
  </tileset>
@@ -2494,9 +2494,9 @@
     <property name="Type" value="Stationary"/>
    </properties>
   </object>
-  <object id="159" name="SwordMan" x="224" y="296"/>
   <object id="160" name="Walker" x="176" y="248"/>
   <object id="161" name="Walker" x="208" y="248"/>
   <object id="163" name="Headless" x="1008" y="296"/>
+  <object id="167" name="Walker" x="312" y="288"/>
  </objectgroup>
 </map>
