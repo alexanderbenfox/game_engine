@@ -648,7 +648,7 @@ void Player::handleSlopeCollisions(Map &map, bool otherCollision){
       sloper = 1;
     }
     
-    newY = newY - this->_collider.getHeight()+bump*SPRITE_SCALE;
+    newY = newY - this->norm.height+bump*SPRITE_SCALE;
     bool below = (newY)<=(getY()+sloper*SPRITE_SCALE);
     
     if(below)
