@@ -318,6 +318,92 @@ protected:
   float _projectileTimeMax = .01;
 };
 
+
+class Necromancer : public Enemy{
+public:
+  Necromancer();
+  Necromancer(Graphics &graphics, Vector2 spawnPoint);
+  void update(float dt, Player &player);
+  void draw(Graphics &graphics);
+  void playerCollision(Player* player);
+  
+  void handleRightCollision(Rectangle tile);
+  void handleLeftCollision(Rectangle tile);
+  void handleUpCollision(Rectangle tile);
+  void handleDownCollision(Rectangle tile);
+  
+  void applyGravity(float dt);
+protected:
+  void setupAnimations();
+  
+  float _reloadTime = .4;
+  float _reloadTimeMax = .4;
+  
+  float _projectileTime = .01;
+  float _projectileTimeMax = .01;
+};
+
+class RedNecromancer : public Enemy{
+public:
+  RedNecromancer();
+  RedNecromancer(Graphics &graphics, Vector2 spawnPoint);
+  void update(float dt, Player &player);
+  void draw(Graphics &graphics);
+  void playerCollision(Player* player);
+  
+  void handleRightCollision(Rectangle tile);
+  void handleLeftCollision(Rectangle tile);
+  void handleUpCollision(Rectangle tile);
+  void handleDownCollision(Rectangle tile);
+  
+  void applyGravity(float dt);
+protected:
+  void setupAnimations();
+  bool attack1;
+  float attackMovement = 0;
+  
+  float _reloadTime = .5;
+  float _reloadTimeMax = .5;
+  
+  float _projectileTime = .01;
+  float _projectileTimeMax = .01;
+};
+
+class RedCapedKnight : public Enemy{
+public:
+  RedCapedKnight();
+  RedCapedKnight(Graphics &graphics, Vector2 spawnPoint);
+  void update(float dt, Player &player);
+  void draw(Graphics &graphics);
+  void playerCollision(Player* player);
+  
+  void handleRightCollision(Rectangle tile);
+  void handleLeftCollision(Rectangle tile);
+  void handleUpCollision(Rectangle tile);
+  void handleDownCollision(Rectangle tile);
+  
+  void applyGravity(float dt);
+protected:
+  void setupAnimations();
+  bool attack1;
+  float attackMovement = 0;
+  
+  bool _swordattack, _throwattack, _shockwave;
+  
+  float _reloadTime = .5;
+  float _reloadTimeMax = .5;
+  
+  float _projectileTime = .01;
+  float _projectileTimeMax = .01;
+  
+  float _runBackTotal = 200;
+  float _runBack = 200;
+  
+  bool runback;
+  
+  int hitThreshold = 2;
+};
+
 class Fodder : public Enemy{
 public:
   Fodder();

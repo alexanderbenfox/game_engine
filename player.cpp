@@ -52,7 +52,11 @@ Player::Player(Graphics &graphics, const std::string &filePath, int startX, int 
   _spriteScale = 2;
   
   COLLIDER normal = {.width = (int)(20*_scale), .height = (int)(60*_scale), .offset = Vector2(1*_scale,4*_scale)};
+  COLLIDER crouch = {.width = (int)(20*_scale), .height = (int)(30*_scale), .offset = Vector2(1*_scale,34*_scale)};
   colliders.push_back(normal);
+  norm = normal;
+  crou = crouch;
+  colliders.push_back(crouch);
   cur_collider = normal;
   
   _jumpattack = false;
@@ -77,6 +81,13 @@ void Player::update(float elapsedTime)
   }
   else{
     _timeToCharge = .4;
+  }
+  
+  if(_crouched){
+    cur_collider = crou;
+  }
+  else{
+    cur_collider = norm;
   }
   
   AnimatedSprite::update(elapsedTime);  

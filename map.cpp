@@ -821,6 +821,18 @@ void Map::LoadObjects(int *mapNode, Graphics &graphics)
             _enemies.push_back(new Chest(graphics, Vector2(x,y)));
           }
           
+          if(strcmp(enemyType, "Necromancer") == 0){
+            _enemies.push_back(new Necromancer(graphics, Vector2(x,y)));
+          }
+          
+          if(strcmp(enemyType, "RedNecromancer") == 0){
+            _enemies.push_back(new RedNecromancer(graphics, Vector2(x,y)));
+          }
+          
+          if(strcmp(enemyType, "RedCapedKnight") == 0){
+            _enemies.push_back(new RedCapedKnight(graphics, Vector2(x,y)));
+          }
+          
           enemy = enemy->NextSiblingElement("object");
         }
         

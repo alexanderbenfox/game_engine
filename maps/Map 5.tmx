@@ -2451,7 +2451,7 @@
     <property name="spawnY" value="96.00"/>
    </properties>
   </object>
-  <object id="146" name="Map 1-9" x="896" y="128" width="32" height="64">
+  <object id="146" name="Map 1-10" x="896" y="128" width="32" height="64">
    <properties>
     <property name="spawnX" value="32"/>
     <property name="spawnY" value="192"/>

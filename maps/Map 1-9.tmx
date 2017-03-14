@@ -630,10 +630,10 @@
  <objectgroup name="onewayplatform"/>
  <objectgroup name="slopes"/>
  <objectgroup name="doors">
-  <object id="108" name="Map 5" x="32" y="192" width="32" height="64">
+  <object id="108" name="Map 1-10" x="32" y="192" width="32" height="64">
    <properties>
-    <property name="spawnX" value="896"/>
-    <property name="spawnY" value="128"/>
+    <property name="spawnX" value="736"/>
+    <property name="spawnY" value="192"/>
    </properties>
   </object>
  </objectgroup>

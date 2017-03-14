@@ -290,6 +290,8 @@ private:
   
   bool _popup;
   
+  COLLIDER norm, crou;
+  
 };
 
 #endif

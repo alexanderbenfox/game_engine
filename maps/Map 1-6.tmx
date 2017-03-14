@@ -2494,7 +2494,7 @@
     <property name="Type" value="Stationary"/>
    </properties>
   </object>
-  <object id="160" name="Walker" x="176" y="248"/>
+  <object id="160" name="Necromancer" x="176" y="248"/>
   <object id="161" name="Walker" x="208" y="248"/>
   <object id="163" name="Headless" x="1008" y="296"/>
   <object id="167" name="Walker" x="312" y="288"/>

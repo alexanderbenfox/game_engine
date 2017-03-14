@@ -1545,6 +1545,545 @@ void Rat::setupAnimations(){
 
 
 
+Necromancer::Necromancer(){}
+
+Necromancer::Necromancer(Graphics &graphics, Vector2 spawnPoint) : Enemy(graphics, "sprites/necro-sheet.png", 1, 1,spawnPoint.x, spawnPoint.y ,64, 64)
+{
+  _spawnPoint = Vector2(spawnPoint);
+  setupAnimations();
+  
+  COLLIDER normal = {.width = (int)(28*_scale), .height = (int)(64*_scale), .offset = Vector2(0,0)};
+  cur_collider = normal;
+  
+  _maxHealth = 10;
+  _currentHealth = _maxHealth;
+  _attacking = false;
+  
+}
+void Necromancer::update(float dt, Player &player){
+  Enemy::update(dt, player);
+  applyGravity(dt);
+  Enemy::setDeathAnim();
+  
+  bool playerToTheRight = (player.getCollider().getCenterX() > (this->getX()+16));
+  bool playerToTheLeft = (player.getCollider().getCenterX() < (this->getX()+16));
+  
+  bool withinShootZone =(player.getCollider().getCenterX() > (this->getCollider().getCenterX()-160*SPRITE_SCALE)) && (player.getCollider().getCenterX() < (this->getCollider().getCenterX()+160*SPRITE_SCALE));
+  
+  bool tooClose =(player.getCollider().getCenterX() > (this->getCollider().getCenterX()-96*SPRITE_SCALE)) && (player.getCollider().getCenterX() < (this->getCollider().getCenterX()+96*SPRITE_SCALE));
+  
+  if (playerToTheRight && _direction < 0)
+    _direction = 1;
+  
+  if (playerToTheLeft && _direction > 0)
+    _direction = -1;
+  
+  if(!withinShootZone)
+    _dx = 300*_direction;
+  else _dx = 0;
+  
+  if(tooClose && !_attacking){
+    _dx = -500*_direction;
+  }
+  
+  if(_stationary)
+    _dx = 0;
+  
+  if(_actionTimer <= 0){
+    _sfx.endSFX(CHARGE1);
+    _currentAnimationDone = false;
+    this->playAnimation("Idle");
+    
+    _reloadTime -= dt;
+    
+    if(_reloadTime <= 0){
+      _sfx.addSFX(CHARGE1, this->getX(), this->getY());
+      _attacking = true;
+      _actionTimer = this->getAnimationTime("Attack");
+      _reloadTime = _reloadTimeMax;
+    }
+  }
+  else{
+    if(_death){
+      _sfx.endSFX(CHARGE1);
+      _attacking = false;
+      _knockBack = false;
+      this->playAnimation("Death", true);
+      this->playDeathSFX(dt);
+      _dx = 0;
+    }
+    
+    if(_attacking){
+      this->playAnimation("Attack",true);
+      _projectileTime-=dt;
+      if(_projectileTime <= 0){
+        _projectileTime = _projectileTimeMax;
+      }
+    }
+    
+    if(_knockBack)
+    {
+      _sfx.endSFX(CHARGE1);
+      this->playAnimation("KnockBack",true);
+      _dx = _knockDirection*_knockBackValue;
+      if(_knockBackValue > 0)
+        _knockBackValue -= _knockBackSlow;
+    }
+    
+    _actionTimer -= dt;
+    
+    if(_currentAnimationDone)
+      _actionTimer = 0;
+    
+    if(_actionTimer <= 0 && _knockBack)
+    {
+      _knockBack = false;
+    }
+    
+    if(_actionTimer <= 0 && _attacking){
+      _sfx.endSFX(CHARGE1);
+      EnemyHitbox projectile = EnemyHitbox(*_graphics, "sprites/necro-proj2.png", 0, 0, this->getX(), this->getY(), 48, 48, _direction*2000.0, 0, .25,true, false,3);
+      projectile.setDestroyable();
+      hitboxes.push_back(projectile);
+      _attacking = false;
+    }
+    
+    if(_actionTimer <= 0 && _death){
+      _dead = true;
+    }
+  }
+  
+  _sfx.moveSFX(CHARGE1, _dx*dt, _dy*dt);
+  
+  this->setY(this->getY() + _dy*dt);
+  this->setX(this->getX() + _dx*dt);
+}
+void Necromancer::draw (Graphics &graphics){
+  Enemy::draw(graphics);
+}
+void Necromancer::playerCollision(Player* player){
+  player->changeHealth(-1);
+}
+
+void Necromancer::handleRightCollision(Rectangle tile){
+  Enemy::handleRightCollision(tile);
+}
+
+void Necromancer::handleLeftCollision(Rectangle tile){
+  Enemy::handleLeftCollision(tile);
+}
+void Necromancer::handleUpCollision(Rectangle tile){
+  Enemy::handleUpCollision(tile);
+}
+void Necromancer::handleDownCollision(Rectangle tile){
+  Enemy::handleDownCollision(tile);
+}
+
+void Necromancer::applyGravity(float dt){
+  _dy += (GRAVITY*dt);
+}
+
+void Necromancer::setupAnimations(){
+  this->addAnimation(.05, 3, 0, 0, "Idle", 64, 64, Vector2(0,0),"main");
+  this->addAnimation(.03, 9, 3, 0, "Attack", 64, 64, Vector2(0,0),"main");
+  this->addAnimation(.02, 1, 12, 0, "KnockBack", 64, 64, Vector2(0,0),"main");
+  this->addAnimation(.04, 5, 13, 0, "Death", 64, 64, Vector2(0,0),"main");
+  
+  this->playAnimation("Idle");
+}
+
+
+
+RedNecromancer::RedNecromancer(){}
+
+RedNecromancer::RedNecromancer(Graphics &graphics, Vector2 spawnPoint) : Enemy(graphics, "sprites/necro-sheet2.png", 1, 1,spawnPoint.x, spawnPoint.y ,64, 64)
+{
+  _spawnPoint = Vector2(spawnPoint);
+  setupAnimations();
+  
+  COLLIDER normal = {.width = (int)(28*_scale), .height = (int)(64*_scale), .offset = Vector2(0,0)};
+  cur_collider = normal;
+  
+  _maxHealth = 20;
+  _currentHealth = _maxHealth;
+  _attacking = false;
+  
+}
+void RedNecromancer::update(float dt, Player &player){
+  Enemy::update(dt, player);
+  applyGravity(dt);
+  Enemy::setDeathAnim();
+  
+  bool playerToTheRight = (player.getCollider().getCenterX() > (this->getX()+16));
+  bool playerToTheLeft = (player.getCollider().getCenterX() < (this->getX()+16));
+  
+  bool withinShootZone =(player.getCollider().getCenterX() > (this->getCollider().getCenterX()-160*SPRITE_SCALE)) && (player.getCollider().getCenterX() < (this->getCollider().getCenterX()+160*SPRITE_SCALE));
+  
+  bool tooClose =(player.getCollider().getCenterX() > (this->getCollider().getCenterX()-128*SPRITE_SCALE)) && (player.getCollider().getCenterX() < (this->getCollider().getCenterX()+128*SPRITE_SCALE));
+  
+  if (playerToTheRight && _direction < 0)
+    _direction = 1;
+  
+  if (playerToTheLeft && _direction > 0)
+    _direction = -1;
+  
+  if(!withinShootZone)
+    _dx = 300*_direction;
+  else _dx = 0;
+  
+  if(tooClose && !_attacking){
+    _dx = -500*_direction;
+  }
+  
+  if(_stationary)
+    _dx = 0;
+  
+  if(_actionTimer <= 0){
+    _sfx.endSFX(CHARGE1);
+    _currentAnimationDone = false;
+    this->playAnimation("Idle");
+    
+    _reloadTime -= dt;
+    
+    if(_reloadTime <= 0){
+      _sfx.addSFX(CHARGE1, this->getX(), this->getY());
+      _attacking = true;
+      int whichAttack = rand()%2;
+      if(whichAttack == 1)
+        attack1 = true;
+      _actionTimer = this->getAnimationTime("Attack");
+      _reloadTime = _reloadTimeMax;
+    }
+  }
+  else{
+    if(_death){
+      _sfx.endSFX(CHARGE1);
+      _attacking = false;
+      _knockBack = false;
+      this->playAnimation("Death", true);
+      this->playDeathSFX(dt);
+      _dx = 0;
+    }
+    
+    if(_attacking){
+      this->playAnimation("Attack",true);
+      _projectileTime-=dt;
+      if(_projectileTime <= 0){
+        _projectileTime = _projectileTimeMax;
+      }
+      if(attack1){
+        float x = this->getX();
+        EnemyHitbox projectile = EnemyHitbox(*_graphics, "sprites/necro-proj.png", 0, 0, x, this->getY(), 32, 32, _direction*attackMovement, -2000, .13);
+        attackMovement+=70;
+        hitboxes.push_back(projectile);
+      }
+    }
+    
+    if(_knockBack)
+    {
+      _sfx.endSFX(CHARGE1);
+      this->playAnimation("KnockBack",true);
+      _dx = _knockDirection*_knockBackValue;
+      if(_knockBackValue > 0)
+        _knockBackValue -= _knockBackSlow;
+    }
+    
+    _actionTimer -= dt;
+    
+    if(_currentAnimationDone)
+      _actionTimer = 0;
+    
+    if(_actionTimer <= 0 && _knockBack)
+    {
+      _knockBack = false;
+    }
+    
+    if(_actionTimer <= 0 && _attacking){
+      _sfx.endSFX(CHARGE1);
+      EnemyHitbox projectile = EnemyHitbox(*_graphics, "sprites/necro-proj2.png", 0, 0, this->getX(), this->getY(), 48, 48, _direction*2000.0, 0, .25,true, false,3);
+      projectile.setDestroyable();
+      if(!attack1)
+        hitboxes.push_back(projectile);
+      _attacking = false;
+      attack1 = false;
+      attackMovement = 0;
+    }
+    
+    if(_actionTimer <= 0 && _death){
+      _dead = true;
+    }
+  }
+  
+  _sfx.moveSFX(CHARGE1, _dx*dt, _dy*dt);
+  
+  this->setY(this->getY() + _dy*dt);
+  this->setX(this->getX() + _dx*dt);
+}
+void RedNecromancer::draw (Graphics &graphics){
+  Enemy::draw(graphics);
+}
+void RedNecromancer::playerCollision(Player* player){
+  player->changeHealth(-1);
+}
+
+void RedNecromancer::handleRightCollision(Rectangle tile){
+  Enemy::handleRightCollision(tile);
+}
+
+void RedNecromancer::handleLeftCollision(Rectangle tile){
+  Enemy::handleLeftCollision(tile);
+}
+void RedNecromancer::handleUpCollision(Rectangle tile){
+  Enemy::handleUpCollision(tile);
+}
+void RedNecromancer::handleDownCollision(Rectangle tile){
+  Enemy::handleDownCollision(tile);
+}
+
+void RedNecromancer::applyGravity(float dt){
+  _dy += (GRAVITY*dt);
+}
+
+void RedNecromancer::setupAnimations(){
+  this->addAnimation(.05, 3, 0, 0, "Idle", 64, 64, Vector2(0,0),"main");
+  this->addAnimation(.03, 9, 3, 0, "Attack", 64, 64, Vector2(0,0),"main");
+  this->addAnimation(.02, 1, 12, 0, "KnockBack", 64, 64, Vector2(0,0),"main");
+  this->addAnimation(.04, 5, 13, 0, "Death", 64, 64, Vector2(0,0),"main");
+  
+  this->playAnimation("Idle");
+}
+
+
+
+RedCapedKnight::RedCapedKnight(){}
+
+RedCapedKnight::RedCapedKnight(Graphics &graphics, Vector2 spawnPoint) : Enemy(graphics, "sprites/RedCapedKnight01-sheet.png", 1, 1,spawnPoint.x, spawnPoint.y ,140, 200)
+{
+  _spawnPoint = Vector2(spawnPoint);
+  setupAnimations();
+  
+  COLLIDER normal = {.width = (int)(28*_scale), .height = (int)(64*_scale), .offset = Vector2(0,0)};
+  cur_collider = normal;
+  
+  _maxHealth = 50;
+  _currentHealth = _maxHealth;
+  _attacking = false;
+  
+  _throwattack = false;
+  _shockwave = false;
+  _swordattack = false;
+  runback = false;
+  
+}
+void RedCapedKnight::update(float dt, Player &player){
+  Enemy::update(dt, player);
+  applyGravity(dt);
+  Enemy::setDeathAnim();
+  
+  bool playerToTheRight = (player.getCollider().getCenterX() > (this->getX()+16));
+  bool playerToTheLeft = (player.getCollider().getCenterX() < (this->getX()+16));
+  
+  bool withinStrikeZone =(player.getCollider().getCenterX() > (this->getCollider().getCenterX()-80*SPRITE_SCALE)) && (player.getCollider().getCenterX() < (this->getCollider().getCenterX()+80*SPRITE_SCALE));
+  
+  bool withinShootZone =(player.getCollider().getCenterX() > (this->getCollider().getCenterX()-160*SPRITE_SCALE)) && (player.getCollider().getCenterX() < (this->getCollider().getCenterX()+160*SPRITE_SCALE));
+  
+  bool tooClose =(player.getCollider().getCenterX() > (this->getCollider().getCenterX()-128*SPRITE_SCALE)) && (player.getCollider().getCenterX() < (this->getCollider().getCenterX()+128*SPRITE_SCALE));
+  
+  if (playerToTheRight && _direction < 0 && !_attacking)
+    _direction = 1;
+  
+  if (playerToTheLeft && _direction > 0 && !_attacking)
+    _direction = -1;
+  
+  if(!withinStrikeZone)
+    _dx = 500*_direction;
+  else _dx = 0;
+  
+  if(runback){
+    _dx = -700*_direction;
+    _runBack -= fabs(_dx*dt);
+    if(_runBack <= 0)
+      runback = false;
+  }
+  
+  
+  if(_stationary)
+    _dx = 0;
+  
+  if(_actionTimer <= 0){
+    _sfx.endSFX(CHARGE1);
+    _currentAnimationDone = false;
+    this->playAnimation("Walk");
+    
+    _reloadTime -= dt;
+    
+    if(_reloadTime <= 0){
+      _sfx.addSFX(CHARGE1, this->getX(), this->getY());
+      _attacking = true;
+      int whichAttack = rand()%2;
+      if(whichAttack == 1){
+        _shockwave = true;
+        _actionTimer = this->getAnimationTime("ShockwaveAttack");
+      }
+      else{
+        _throwattack = true;
+        _actionTimer = this->getAnimationTime("Throw");
+      }
+      _reloadTime = _reloadTimeMax;
+    }
+    
+    if(withinStrikeZone && !_attacking && !runback){
+      _attacking = true;
+      _swordattack = true;
+      _actionTimer = this->getAnimationTime("SwordAttack");
+      _sfx.endSFX(CHARGE1);
+    }
+  }
+  else{
+    if(_death){
+      _sfx.endSFX(CHARGE1);
+      _attacking = false;
+      _knockBack = false;
+      this->playAnimation("Death", true);
+      this->playDeathSFX(dt);
+      _dx = 0;
+    }
+    
+    if(_attacking && _throwattack){
+      _dx = 0;
+      this->playAnimation("Throw",true);
+      _projectileTime-=dt;
+      if(_projectileTime <= 0){
+        _projectileTime = _projectileTimeMax;
+      }
+    }
+    
+    if(_attacking && _shockwave){
+      _dx = 0;
+      this->playAnimation("ShockwaveAttack",true);
+      _projectileTime-=dt;
+      if(_projectileTime <= 0){
+        _projectileTime = _projectileTimeMax;
+      }
+    }
+    if(_attacking && _swordattack){
+      _dx = 0;
+      this->playAnimation("SwordAttack",true);
+      float totTime = this->getAnimationTime("SwordAttack");
+      if(_actionTimer < totTime - .2 && _actionTimer > totTime - .25){
+        float box_pos_x = -92*SPRITE_SCALE;
+        if(_direction > 0)
+          box_pos_x = 23*SPRITE_SCALE;
+        
+        EnemyHitbox swordhitbox = EnemyHitbox(*_graphics, "", 0, 0, this->getX() + 16 *SPRITE_SCALE + box_pos_x, this->getY(), 50*SPRITE_SCALE, 64*SPRITE_SCALE, 0, 0, .01,false, false);
+        hitboxes.push_back(swordhitbox);
+      }
+      
+      if(_actionTimer < totTime - .35 && _actionTimer > totTime - .4){
+        float box_pos_x = -92*SPRITE_SCALE;
+        if(_direction > 0)
+          box_pos_x = 23*SPRITE_SCALE;
+        
+        EnemyHitbox swordhitbox = EnemyHitbox(*_graphics, "", 0, 0, this->getX() + 16 *SPRITE_SCALE + box_pos_x, this->getY(), 50*SPRITE_SCALE, 64*SPRITE_SCALE, 0, 0, .01,false, false);
+        hitboxes.push_back(swordhitbox);
+      }
+    }
+    
+    if(_knockBack)
+    {}
+    
+    _actionTimer -= dt;
+    
+    if(_currentAnimationDone)
+      _actionTimer = 0;
+    
+    if(_actionTimer <= 0 && _knockBack)
+    {
+      _knockBack = false;
+      hitThreshold--;
+      if(hitThreshold <= 0){
+        runback = true;
+        hitThreshold = 2;
+        _runBack = _runBackTotal;
+      }
+    }
+    
+    if(_actionTimer <= 0 && _attacking && !_swordattack){
+      _sfx.endSFX(CHARGE1);
+      if(_shockwave){
+        EnemyHitbox projectile = EnemyHitbox(*_graphics, "sprites/RedCapedKnightShockwave.png", 0, 0, this->getX(), this->getY(), 64, 32, _direction*2000.0, 0, .25,true, false,3);
+        EnemyHitbox projectile2 = EnemyHitbox(*_graphics, "sprites/RedCapedKnightShockwave.png", 0, 0, this->getX(), this->getY(), 64, 32, -_direction*2000.0, 0, .25,true, false,3);
+        projectile.setDestroyable();
+        projectile2.setDestroyable();
+        hitboxes.push_back(projectile);
+        hitboxes.push_back(projectile2);
+      }
+      else{
+        EnemyHitbox projectile = EnemyHitbox(*_graphics, "sprites/RedCapedKnightThrow.png", 0, 0, this->getX(), this->getY(), 16, 64, _direction*2500.0, 0, .25,true, false,3);
+        projectile.setDestroyable();
+        hitboxes.push_back(projectile);
+        
+      }
+      attackMovement = 0;
+    }
+    
+    if(_attacking && _actionTimer <= 0){
+      _attacking = false;
+      _swordattack = false;
+      _shockwave = false;
+      _throwattack = false;
+    }
+    
+    if(_actionTimer <= 0 && _death){
+      _dead = true;
+    }
+  }
+  
+  _sfx.moveSFX(CHARGE1, _dx*dt, _dy*dt);
+  
+  this->setY(this->getY() + _dy*dt);
+  this->setX(this->getX() + _dx*dt);
+}
+void RedCapedKnight::draw (Graphics &graphics){
+  Enemy::draw(graphics);
+}
+void RedCapedKnight::playerCollision(Player* player){
+  player->changeHealth(-2);
+}
+
+void RedCapedKnight::handleRightCollision(Rectangle tile){
+  Enemy::handleRightCollision(tile);
+}
+
+void RedCapedKnight::handleLeftCollision(Rectangle tile){
+  Enemy::handleLeftCollision(tile);
+}
+void RedCapedKnight::handleUpCollision(Rectangle tile){
+  Enemy::handleUpCollision(tile);
+}
+void RedCapedKnight::handleDownCollision(Rectangle tile){
+  Enemy::handleDownCollision(tile);
+}
+
+void RedCapedKnight::applyGravity(float dt){
+  _dy += (GRAVITY*dt);
+}
+
+void RedCapedKnight::setupAnimations(){
+  Vector2 offset = Vector2(-60, -76);
+  this->addSpriteSheet(*_graphics, "sprites/RedCapedKnight02-sheet.png", "attack", 200, 140);
+  this->addAnimation(.05, 1, 0, 0, "Idle", 200, 140, offset,"main");
+  this->addAnimation(.05, 6, 0, 0, "Walk", 200, 140, offset,"main");
+  this->addAnimation(.04, 8, 6, 0, "Death", 200, 140, offset,"main");
+  this->addAnimation(.03, 17, 14, 0, "SwordAttack", 200, 140, offset,"main");
+  
+  this->addAnimation(.03, 15, 0, 0, "ShockwaveAttack", 200, 140, offset,"attack");
+  this->addAnimation(.03, 10, 15, 0, "Throw", 200, 140, offset,"attack");
+  
+  this->playAnimation("Idle");
+}
+
+
 
 
 

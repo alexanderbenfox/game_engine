@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" orientation="orthogonal" renderorder="right-down" width="18" height="45" tilewidth="32" tileheight="32" nextobjectid="159">
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="18" height="45" tilewidth="32" tileheight="32" nextobjectid="160">
  <tileset firstgid="1" name="stage1_tilesheet" tilewidth="32" tileheight="32" tilecount="256">
   <image source="../content/tilesets/stage1_tilesheet.png" width="512" height="512"/>
  </tileset>
@@ -3351,5 +3351,6 @@
   <object id="155" name="Fodder" x="272" y="544" width="32" height="32"/>
   <object id="156" name="Fodder" x="344" y="808" width="32" height="32"/>
   <object id="157" name="Fodder" x="224" y="1112" width="32" height="32"/>
+  <object id="159" name="Necromancer" x="400" y="648"/>
  </objectgroup>
 </map>
