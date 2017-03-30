@@ -69,9 +69,9 @@ Snake::Snake(Graphics &graphics, Vector2 spawnPoint, std::string filePath, Vecto
 }
 
 Snake::~Snake(){
-  SpriteLoader::getInstance()->removeTexture("sprites/snakedeath-sheet.png");
-  SpriteLoader::getInstance()->removeTexture("sprites/snakeboss-sheet.png");
-  SpriteLoader::getInstance()->removeTexture(snakeProjectile);
+  //SpriteLoader::getInstance()->removeTexture("sprites/snakedeath-sheet.png");
+  //SpriteLoader::getInstance()->removeTexture("sprites/snakeboss-sheet.png");
+  //SpriteLoader::getInstance()->removeTexture(snakeProjectile);
 }
 
 void Snake::normalCollider(){

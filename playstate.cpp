@@ -1,11 +1,13 @@
 #include "gamestate.h"
+#include "loop.h"
 
-PlayState::PlayState(Graphics *graphics){
+PlayState::PlayState(Graphics *graphics, cpu_clock *clock){
   transitionMap = false;
   camera.w = WINDOW_WIDTH;
   camera.h = WINDOW_HEIGHT;
   
-  this->map = Map("tut1",*graphics);
+  //this->map = Map("tut1",*graphics);
+  this->map=Map("Map 5",*graphics);
   Vector2 spawnPoint = map.getPlayerSpawnPoint();
   
   this->player = Player(*graphics, "sprites/playerspritesheett.png",1 ,1, spawnPoint.x-32, spawnPoint.y - 60, 64, 32);
@@ -13,6 +15,7 @@ PlayState::PlayState(Graphics *graphics){
   player.setCamera(&camera, map.getSize(), true);
   player.changeRevivalPoint("Map 1-1", spawnPoint);
   pauseTime = 0;
+  clockRef = clock;
 }
 
 void PlayState::setMap(std::string name, Graphics *graphics){
@@ -57,8 +60,23 @@ void PlayState::processInput(Input &input){
   {
     player.shoot();
   }
-  if (input.keyWasPressed(SDL_SCANCODE_S))
+  if(input.keyIsHeld(SDL_SCANCODE_S) && !player.chargeAttackInitiated){
+    framesHeld++;
+    float holdTime = 10*(clockRef->fps/60);
+    if(framesHeld > holdTime){
+      player.chargeAttack();
+      player.chargeAttackInitiated = true;
+    }
+  }
+  else{
+    framesHeld = 0;
+  }
+  if (input.keyWasReleased(SDL_SCANCODE_S))
   {
+    if(player.chargeAttackInitiated)
+      player.chargeAttackInitiated = false;
+  }
+  if(input.keyWasPressed(SDL_SCANCODE_S)){
     player.attack();
   }
   if (input.keyWasPressed(SDL_SCANCODE_Q))
@@ -89,8 +107,7 @@ void PlayState::update(float dt, Graphics *graphics){
   if(!player.getDead()){
     
     if (player.hitRegistered()){
-      float fps = 0.0075*(30.0/dt);
-      pauseTime = 7*(fps/30);
+      pauseTime = 8*(clockRef->fps/30);
     }
     
     if (player.hitRegistered() || pauseTime > 0){
@@ -105,12 +122,14 @@ void PlayState::update(float dt, Graphics *graphics){
       
       //transition to another room
       if (player.handleDoorCollisions(map) && transitionMap){
-        Door newRoom = player.getNewRoom();
-        this->map.deleteMap();
-        this->map = Map(newRoom.getDestination(),*graphics);
-        player.setX(newRoom.getSpawn().x);
-        player.setY(newRoom.getSpawn().y);
-        player.setCamera(&camera, map.getSize(),true);
+        if(!PersistentInfo::getRoomManager()->checkEnemyLock(map.getMapName())){
+          Door newRoom = player.getNewRoom();
+          this->map.deleteMap();
+          this->map = Map(newRoom.getDestination(),*graphics);
+          player.setX(newRoom.getSpawn().x);
+          player.setY(newRoom.getSpawn().y);
+          player.setCamera(&camera, map.getSize(),true);
+        }
       }
     }
     

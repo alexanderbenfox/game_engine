@@ -152,7 +152,6 @@ void GameLoop::loop() {
   //create graphics objects
   Graphics graphics;
   Input input;
-  PlayState playState = PlayState(&graphics);
   StartMenuState startMenuState = StartMenuState();
   //currState = &playState;
   StateTransition::getInstance()->setCurrentGameState(start_menu);
@@ -161,6 +160,8 @@ void GameLoop::loop() {
   
   cpu_clock clock;
   clock.setFPS();
+  
+  PlayState playState = PlayState(&graphics, &clock);
   
   float frames = 0;
   float startTime = SDL_GetTicks();

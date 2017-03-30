@@ -2011,15 +2011,15 @@ void RedCapedKnight::update(float dt, Player &player){
     if(_actionTimer <= 0 && _attacking && !_swordattack){
       _sfx.endSFX(CHARGE1);
       if(_shockwave){
-        EnemyHitbox projectile = EnemyHitbox(*_graphics, "sprites/RedCapedKnightShockwave.png", 0, 0, this->getX(), this->getY(), 64, 32, _direction*2000.0, 0, .25,true, false,3);
-        EnemyHitbox projectile2 = EnemyHitbox(*_graphics, "sprites/RedCapedKnightShockwave.png", 0, 0, this->getX(), this->getY(), 64, 32, -_direction*2000.0, 0, .25,true, false,3);
+        EnemyHitbox projectile = EnemyHitbox(*_graphics, "sprites/RedCapedKnightShockwave.png", 0, 0, this->getX(), this->getY(), 64, 32, _direction*2000.0, 0, .25,true, false,3,3);
+        EnemyHitbox projectile2 = EnemyHitbox(*_graphics, "sprites/RedCapedKnightShockwave.png", 0, 0, this->getX(), this->getY(), 64, 32, -_direction*2000.0, 0, .25,true, false,3,3);
         projectile.setDestroyable();
         projectile2.setDestroyable();
         hitboxes.push_back(projectile);
         hitboxes.push_back(projectile2);
       }
       else{
-        EnemyHitbox projectile = EnemyHitbox(*_graphics, "sprites/RedCapedKnightThrow.png", 0, 0, this->getX(), this->getY(), 16, 64, _direction*2500.0, 0, .25,true, false,3);
+        EnemyHitbox projectile = EnemyHitbox(*_graphics, "sprites/RedCapedKnightThrow.png", 0, 0, this->getX(), this->getY(), 16, 64, _direction*2500.0, 0, .25,true, false,3,2);
         projectile.setDestroyable();
         hitboxes.push_back(projectile);
         

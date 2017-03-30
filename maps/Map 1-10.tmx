@@ -1200,11 +1200,6 @@
  </objectgroup>
  <objectgroup name="enemies">
   <object id="122" name="RedCapedKnight" x="400" y="272"/>
-  <object id="129" name="Fodder" x="672" y="192" width="32" height="32"/>
-  <object id="130" name="Fodder" x="672" y="224" width="32" height="32"/>
-  <object id="131" name="Fodder" x="672" y="160" width="32" height="32"/>
-  <object id="132" name="Fodder" x="704" y="160" width="32" height="32"/>
-  <object id="133" name="Fodder" x="736" y="160" width="32" height="32"/>
  </objectgroup>
  <objectgroup name="checkpoint"/>
 </map>

@@ -19,6 +19,8 @@ SFXManager::SFXManager(Graphics &graphics, bool arrow){
     
     SFX_SPRITES charged(&graphics, 0.03,4,59,100,CHARGED);
     
+    SFX_SPRITES wings(&graphics, 0.015,5,63,(5*.015),WINGS);
+    
     SFX_SPRITES pick(&graphics, 0.005,6,12,0.03,drop);
     
     _baseSprites[drop] = pick;
@@ -33,6 +35,7 @@ SFXManager::SFXManager(Graphics &graphics, bool arrow){
     _baseSprites[CHARGE1] = charge1;
     _baseSprites[CHARGE2] = charge2;
     _baseSprites[CHARGED] = charged;
+    _baseSprites[WINGS] = wings;
   }
   else{
     SFX_SPRITES arrow_exp(&graphics, 0.01, 5, 27, 0.05);

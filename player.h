@@ -52,6 +52,46 @@ struct CameraOffset{
   }
 };
 
+class LockedRoomManager{
+private:
+  std::map<std::string, bool> _enemyLocks;
+  std::vector<std::string> _keyLocks;
+public:
+  void addEnemyLock(std::string enemyRoom){
+    if(_enemyLocks.find(enemyRoom) == _enemyLocks.end())
+      _enemyLocks[enemyRoom] = true;
+  }
+  
+  void setUnlocked(std::string enemyRoom){
+    if(_enemyLocks.find(enemyRoom) != _enemyLocks.end()){
+      _enemyLocks[enemyRoom] = false;
+    }
+  }
+  
+  bool checkEnemyLock(std::string enemyRoom){
+    bool foundInLocks = false;
+    if(_enemyLocks.find(enemyRoom) != _enemyLocks.end()){
+      foundInLocks = _enemyLocks[enemyRoom];
+    }
+    return foundInLocks;
+  }
+  
+  void addKeyLock(std::string keyLocation){
+    _keyLocks.push_back(keyLocation);
+  }
+  
+  bool checkKeyLock(std::string roomLocation){
+    bool foundInLocks = false;
+    for(int i = 0; i<_keyLocks.size(); i++){
+      if(_keyLocks.at(i) == roomLocation){
+        foundInLocks = true;
+      }
+    }
+    return foundInLocks;
+    
+  }
+};
+
 class UpgradeManager{
 private:
   bool _doubleJump, _glide, _airDodge, _chargeSpeed;
@@ -113,11 +153,16 @@ public:
     return &getInstance()->upgrades;
   }
   
+  static LockedRoomManager* getRoomManager(){
+    return &getInstance()->roomManager;
+  }
+  
   PersistentInfo(PersistentInfo const&) = delete;
   void operator=(PersistentInfo const&) = delete;
 private:
   PersistentInfo(){}
   UpgradeManager upgrades;
+  LockedRoomManager roomManager;
 };
 
 class Player : public AnimatedSprite{
@@ -162,6 +207,8 @@ public:
   void check_crouch(bool crouch);
   void dropDown();
   void attack();
+  void chargeAttack();
+  bool chargeAttackInitiated;
   
   void setActionBools();
   
@@ -241,10 +288,11 @@ public:
   bool getPopup();
   
 private:
+  int _dodgeFrameCounter = 0;
   std::vector<COLLIDER> colliders;
   COLLIDER cur_collider;
   
-  bool _grounded, _crouched, _shoot, _melee, _dodge, _wait, _jumpattack;
+  bool _grounded, _crouched, _shoot, _melee, _dodge, _wait, _jumpattack, _chargeAttack;
   int _combo = 0;
   bool _charging;
   float _chargeTime;

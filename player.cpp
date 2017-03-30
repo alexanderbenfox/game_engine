@@ -41,12 +41,15 @@ Player::Player(Graphics &graphics, const std::string &filePath, int startX, int 
   this->addAnimation(.017,8,24,0,"Attack3",160,128,Vector2(-40,-48),"attacking");
   this->addAnimation(.02,6,13,0,"JumpAttack",160,128, Vector2(0,-75),"attacking");
   this->addAnimation(.015,5,19,0,"CrouchAttack",160,128,Vector2(0,28),"attacking");
+  this->addAnimation(.017,14,41,0,"ChargeAttack",160,128,Vector2(-40,-48),"attacking");
   
   this->addAnimation(.015,1,34,0,"KnockBack",160,128,Vector2(-40,-48),"attacking");
   this->addAnimation(.02,6,35,0,"Death",160,128,Vector2(-40,-48),"attacking");
   
-  this->addSpriteSheet(graphics, "sprites/rollingsheet.png", "roll", 64, 64);
-  this->addAnimation(.01,11,1,0,"Dodge",64,64,Vector2(0,0),"roll");
+  this->addSpriteSheet(graphics, "sprites/dodge-sheet.png", "roll", 64, 64);
+  this->addAnimation(.01,11,0,0,"Dodge",64,64,Vector2(0,0),"roll");
+  this->addAnimation(.015,2,12,0,"AirDodge",64,64,Vector2(0,0),"roll");
+  this->addAnimation(.015,2,14,0,"FallDodge",64,64,Vector2(0,0),"roll");
     
   _scale = 2;
   _spriteScale = 2;
@@ -71,6 +74,8 @@ Player::Player(Graphics &graphics, const std::string &filePath, int startX, int 
   _shoot = false;
   _bufferShoot = false;
   _popup = false;
+  _chargeAttack = false;
+  chargeAttackInitiated = false;
   
 }
 
@@ -248,35 +253,59 @@ void Player::setPlayerActions(float elapsedTime){
       }
     }
     if(_melee){
-      if(_grounded && !_crouched && !_jumpattack){
-        _dx = 0;
-        if (_actionTimer > .025)
-          _dx = 600*dir;
-        if (_combo == 0)
-          this->playAnimation("Attack", true);
-        else if (_combo == 1)
-          this->playAnimation("Attack2", true);
-        else{
-          if(_actionTimer < .10)
-            _dx = 800*dir;
-          if (_actionTimer < .05 || _actionTimer > .1)
-            _dx = 0;
-          this->playAnimation("Attack3",true);
+      if(_chargeAttack){
+        if(_grounded){
+          _dx = 0;
+          if (_actionTimer < .085 && _actionTimer > .025)
+            _dx = 900*dir;
+          this->playAnimation("ChargeAttack",true);
         }
       }
-      if(!_grounded || _jumpattack){
-        this->playAnimation("JumpAttack", true);
-      }
-      if(_grounded && _crouched){
-        _dx = 0;
-        this->playAnimation("CrouchAttack", true);
+      else{
+        if(_grounded && !_crouched && !_jumpattack){
+          _dx = 0;
+          if (_actionTimer > .025)
+            _dx = 600*dir;
+          if (_combo == 0)
+            this->playAnimation("Attack", true);
+          else if (_combo == 1)
+            this->playAnimation("Attack2", true);
+          else{
+            if(_actionTimer < .10)
+              _dx = 800*dir;
+            if (_actionTimer < .05 || _actionTimer > .1)
+              _dx = 0;
+            this->playAnimation("Attack3",true);
+          }
+        }
+        if(!_grounded || _jumpattack){
+          this->playAnimation("JumpAttack", true);
+        }
+        if(_grounded && _crouched){
+          _dx = 0;
+          this->playAnimation("CrouchAttack", true);
+        }
       }
     }
     if(_dodge){
+      //if((int)(_actionTimer*100) % 5 == 0){
+      if(_dodgeFrameCounter % 5 == 0){
+        //std::cout<<(int)(_actionTimer*100)<<std::endl;
+        createGhost(this->getX(), this->getY());
+      }
       _storedFlipped = (_dx > 0) ? false : true;
       _storedFlipped = (_dx == 0) ? _flipped : _storedFlipped;
-      this->playAnimation("Dodge", true);
-      _dx = 2000*dir;
+      float diffY = _oldY - this->getY();
+      if(diffY == 0 && _dy == 0)
+        this->playAnimation("Dodge", false);
+      else{
+        if(diffY > 0 || _dy < 0)
+          this->playAnimation("AirDodge",false);
+        else
+          this->playAnimation("FallDodge",false);
+      }
+      _dx = 2500*dir;
+      _dodgeFrameCounter ++;
     }
     _actionTimer -= elapsedTime;
     if(_actionTimer <= 0)
@@ -301,7 +330,9 @@ void Player::draw(Graphics &graphics)
 {
   if(_dead)
     SDL_SetRenderDrawColor(graphics.getRenderer(), 0, 0, 0, 255);
+  
   AnimatedSprite::draw(graphics,this->getX(),this->getY());
+  //AnimatedSprite::drawTest(graphics,this->getX(), this->getY());
   //SDL_RenderDrawLine(graphics.getRenderer(), this->_collider.getLeft(),this->_collider.getTop(),this->_collider.getLeft()+_sourceRect.w,this->_collider.getTop()+_sourceRect.h);
   
   for(int i = 0; i < arrows.size(); i++){
@@ -333,15 +364,16 @@ void Player::jump(){
   }
   if(_grounded || _jumps > 0){
     _bufferJump = false;
-    //if(!_grounded)
     sfx.addSFX(DUST, this->getX(), this->getY()+32*_spriteScale);
+    if(!_grounded)
+      sfx.addSFX(WINGS, this->getX()-16*_spriteScale, this->getY()+16*_spriteScale);
     if(!_grounded){
       _jumps--;
-      _dy = -2000;
+      _dy = -2600;
     }
     else{
       _grounded = false;
-      _dy = -2600;
+      _dy = -3000;
     }
   }
 }
@@ -354,11 +386,12 @@ void Player::dodge(){
   }
   else if(_actionTimer <= 0 && _grounded)
   {
+    _dodgeFrameCounter = 0;
     sfx.addSFX(DUST, this->getX(), this->getY()+32*_spriteScale);
     _currentAnimationDone = false;
     _bufferDodge = false;
-    _actionTimer = 1.0;
-    //_actionTimer = this->getAnimationTime("Dodge");
+    //_actionTimer = 1.0;
+    _actionTimer = this->getAnimationTime("Dodge")+.02;
     setActionBools();
     _dodge = true;
   }
@@ -366,6 +399,7 @@ void Player::dodge(){
 
 void Player::setActionBools(){
   _melee = false;
+  _chargeAttack = false;
   _shoot = false;
   _dodge = false;
 }
@@ -440,6 +474,20 @@ void Player::attack(){
     setActionBools();
     _melee = true;
   }
+}
+
+void Player::chargeAttack(){
+  float dir = _flipped ? -1 : 1;
+  _screenPaused = false;
+  _bufferAttack = false;
+  _currentAnimationDone = false;
+  if(_grounded){
+    _actionTimer = this->getAnimationTime("ChargeAttack");
+    hitbox.createHitBox(getX(), getY(), CHARGING, dir);
+  }
+  setActionBools();
+  _melee = true;
+  _chargeAttack = true;
 }
 
 void Player::check_crouch(bool crouch){

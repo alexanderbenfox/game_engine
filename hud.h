@@ -33,23 +33,39 @@ struct HealthBar : Component{
 
 struct ItemUI : Component{
   int num;
+  int storedNum;
+  SDL_Surface* textSurface = NULL;
   Sprite itemPicture;
   void update(float dt, Player* player);
   void draw(Graphics &graphics){
     graphic.draw(graphics, posX, posY);
     itemPicture.draw(graphics, posX, posY);
     std::string message = std::to_string(num);
-    TextRender::RenderTextOnScreen(graphics, message, 12*SPRITE_SCALE, white, Vector2(posX + 20*SPRITE_SCALE, posY + 15*SPRITE_SCALE));
+    if(storedNum != num){
+      if(textSurface != NULL)
+        SDL_FreeSurface(textSurface);
+      textSurface = TextRender::createNewTextSurface(graphics, message, white);
+    }
+    TextRender::RenderTextOnScreen(graphics, message, 12*SPRITE_SCALE, white, Vector2(posX + 20*SPRITE_SCALE, posY + 15*SPRITE_SCALE), textSurface);
+    storedNum = num;
   }
 };
 
 struct CurrencyUI : Component{
   int num;
+  int storedNum;
+  SDL_Surface* textSurface = NULL;
   void update(float dt, Player* player);
   void draw(Graphics &graphics){
     graphic.draw(graphics, posX, posY);
     std::string message = std::to_string(num);
-    TextRender::RenderTextOnScreen(graphics, message, 12*SPRITE_SCALE, white, Vector2(posX + 20*SPRITE_SCALE, posY + 2*SPRITE_SCALE));
+    if(storedNum != num){
+      if(textSurface != NULL)
+        SDL_FreeSurface(textSurface);
+      textSurface = TextRender::createNewTextSurface(graphics, message, white);
+    }
+    TextRender::RenderTextOnScreen(graphics, message, 12*SPRITE_SCALE, white, Vector2(posX + 20*SPRITE_SCALE, posY + 2*SPRITE_SCALE), textSurface);
+    storedNum = num;
     
   }
 };

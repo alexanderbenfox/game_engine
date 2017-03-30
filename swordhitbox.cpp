@@ -16,7 +16,7 @@ void SwordHitbox::createHitBox(int x, int y, HitboxType type, float direction){
         _currentHitbox = Hitbox(temp, direction);
       }
       else{
-        Rectangle temp = Rectangle(x-(80+32),y,80+32,52);
+        Rectangle temp = Rectangle(x-(80+32)-16,y,80+32,52);
         _currentHitbox = Hitbox(temp, direction);
       }
       _currentHitbox.setDelay(0.05);
@@ -28,7 +28,7 @@ void SwordHitbox::createHitBox(int x, int y, HitboxType type, float direction){
         _currentHitbox = Hitbox(temp, direction);
       }
       else{
-        Rectangle temp = Rectangle(x-(80+32),y,80+32,80);
+        Rectangle temp = Rectangle(x-(80+32)-16,y,80+32,80);
         _currentHitbox = Hitbox(temp, direction);
       }
       _currentHitbox.setDelay(0.08);
@@ -41,7 +41,7 @@ void SwordHitbox::createHitBox(int x, int y, HitboxType type, float direction){
         _currentHitbox = Hitbox(temp, direction);
       }
       else{
-        Rectangle temp = Rectangle(x-80,y+64,80,32);
+        Rectangle temp = Rectangle(x-80-16,y+64,80,32);
         _currentHitbox = Hitbox(temp, direction);
       }
       _currentHitbox.setDelay(0.02);
@@ -53,10 +53,24 @@ void SwordHitbox::createHitBox(int x, int y, HitboxType type, float direction){
         _currentHitbox = Hitbox(temp, direction);
       }
       else{
-        Rectangle temp = Rectangle(x-80,y-40,80+32,96+32);
+        Rectangle temp = Rectangle(x-80-16,y-40,80+32,96+32);
         _currentHitbox = Hitbox(temp, direction);
       }
       _currentHitbox.setDelay(0.04);
+      break;
+    }
+    case CHARGING:{
+      if(direction >= 0){
+        Rectangle temp = Rectangle(x+32,y-50,160 + 32,96+64);
+        _currentHitbox = Hitbox(temp, direction);
+      }
+      else{
+        Rectangle temp = Rectangle(x-160-16,y-50,160 + 32,96+64);
+        _currentHitbox = Hitbox(temp, direction);
+      }
+      _currentHitbox.setDelay(0.15);
+      _currentHitbox.type = CHARGING;
+      break;
     }
     default:
       break;
@@ -87,7 +101,8 @@ void SwordHitbox::update(float dt, float dx, float dy, float actionTimer){
 
 void SwordHitbox::draw(Graphics &graphics){
   _sfx.draw(graphics);
-  /*if(_currentHitbox.isActive){
+  /*SDL_SetRenderDrawColor(graphics.getRenderer(), 255, 255, 255, 255);
+  if(_currentHitbox.isActive){
     SDL_Rect camera = graphics.getCamera();
     Rectangle c = Rectangle(_currentHitbox.rect.getLeft()-camera.x, _currentHitbox.rect.getTop()-camera.y,_currentHitbox.rect.getWidth(), _currentHitbox.rect.getHeight());
     SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getTop(),c.getLeft()+c.getWidth(),c.getTop());
@@ -108,6 +123,9 @@ void SwordHitbox::handleEnemyCollisions(Map &map){
         enemy->changeHealth(-4);
         if(strong)
           enemy->changeHealth(-3);
+        if(_currentHitbox.type == CHARGING){
+          enemy->changeHealth(-10);
+        }
         
         enemy->knockBack(_currentHitbox.direction, strong);
         _currentHitbox.hitRegistered = true;

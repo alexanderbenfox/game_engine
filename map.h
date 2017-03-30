@@ -107,6 +107,7 @@ public:
   void addItemToMap(Pickup* item);
   
 protected:
+  Sprite doorLock;
   bool _loaded;
   SDL_Rect _camera;
   std::string _mapName;

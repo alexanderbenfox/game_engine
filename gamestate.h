@@ -8,6 +8,8 @@
 #include "player.h"
 #include "menu.h"
 
+struct cpu_clock;
+
 enum state{
   game_play, game_play_no_tut, start_menu
 };
@@ -41,7 +43,7 @@ public:
 class PlayState : public GameState{
 public:
   PlayState(){}
-  PlayState(Graphics *graphics);
+  PlayState(Graphics *graphics, cpu_clock* clock);
   void update(float dt, Graphics *graphics);
   void draw(Graphics *graphics);
   void processInput(Input &input);
@@ -53,6 +55,9 @@ private:
   SDL_Rect camera;
   int pauseTime;
   bool transitionMap;
+  cpu_clock* clockRef;
+  
+  int framesHeld = 0;
 };
 
 class StartMenuState : public GameState{

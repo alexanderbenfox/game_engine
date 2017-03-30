@@ -34,6 +34,8 @@ Map::Map(std::string mapName, Graphics &graphics){
   this->_size = Vector2(0,0);
   _loaded = false;
   
+  doorLock = Sprite(graphics, "sprites/door-lock.png", 0, 0, 0, 0, 32*SPRITE_SCALE, 64*SPRITE_SCALE);
+  
   loadMap(this->_mapName, graphics);
 }
 
@@ -217,6 +219,7 @@ void Map::update(float elapsedTime, Player &player){
     if(_enemies.at(i)->isDead()){
       delete _enemies.at(i);
       _enemies.erase(_enemies.begin() + i);
+      PersistentInfo::getRoomManager()->setUnlocked(_mapName);
     }
   }
   
@@ -234,6 +237,7 @@ void Map::update(float elapsedTime, Player &player){
       player.bossDied();
       delete _bosses.at(i);
       _bosses.erase(_bosses.begin() + i);
+      PersistentInfo::getRoomManager()->setUnlocked(_mapName);
     }
     else{
       player.setTrackedBoss(_bosses.at(i));
@@ -291,6 +295,12 @@ void Map::draw(Graphics &graphics){
     SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getTop(),c.getLeft(),c.getBottom());
     SDL_RenderDrawLine(graphics.getRenderer(), c.getRight(),c.getTop(),c.getRight(),c.getBottom());
     SDL_RenderDrawLine(graphics.getRenderer(), c.getLeft(),c.getBottom(),c.getLeft()+c.getWidth(),c.getBottom());*/
+  }
+  
+  for(int i = 0; i < _doors.size(); i++){
+    if(PersistentInfo::getRoomManager()->checkEnemyLock(_mapName)){
+      doorLock.draw(graphics, _doors.at(i).getLeft(), _doors.at(i).getTop());
+    }
   }
 }
 
@@ -830,7 +840,10 @@ void Map::LoadObjects(int *mapNode, Graphics &graphics)
           }
           
           if(strcmp(enemyType, "RedCapedKnight") == 0){
-            _enemies.push_back(new RedCapedKnight(graphics, Vector2(x,y)));
+            PersistentInfo::getRoomManager()->addEnemyLock(_mapName);
+            if(PersistentInfo::getRoomManager()->checkEnemyLock(_mapName)){
+              _enemies.push_back(new RedCapedKnight(graphics, Vector2(x,y)));
+            }
           }
           
           enemy = enemy->NextSiblingElement("object");

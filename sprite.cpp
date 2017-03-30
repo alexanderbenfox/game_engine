@@ -41,6 +41,7 @@ Uint32 rmask, gmask, bmask, amask;
   
   this->addSpriteSheet(graphics, filePath, "main", width, height);
   _spriteSheet = _spriteSheets["main"].sheet;
+  _spriteSheetSurface = _spriteSheets["main"].sheet_surface;
 }
 
 Sprite::~Sprite() {}
@@ -48,10 +49,13 @@ Sprite::~Sprite() {}
 void Sprite::addSpriteSheet(Graphics &graphics, const std::string &filePath, std::string name, int width, int height){
   if(SpriteLoader::spriteLoaded(filePath)){
     _spriteSheets[name].sheet = SpriteLoader::getTexture(filePath);
+    _spriteSheets[name].sheet_surface = SpriteLoader::getSurface(filePath);
   }
   else{
-    SpriteLoader::addTexture(filePath, SDL_CreateTextureFromSurface(graphics.getRenderer(), graphics.loadImage(filePath)));
+    SpriteLoader::addSurface(filePath, graphics.loadImage(filePath));
+    SpriteLoader::addTexture(filePath, SDL_CreateTextureFromSurface(graphics.getRenderer(), SpriteLoader::getSurface(filePath)));
     _spriteSheets[name].sheet = SpriteLoader::getTexture(filePath);
+    _spriteSheets[name].sheet_surface = SpriteLoader::getSurface(filePath);
     
   }
   _spriteSheets[name].width = width;

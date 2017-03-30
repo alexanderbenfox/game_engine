@@ -16,6 +16,7 @@ class Graphics;
 struct SHEET{
   int width, height;
   SDL_Texture* sheet;
+  SDL_Surface* sheet_surface;
 };
 
 class SpriteLoader{
@@ -31,17 +32,31 @@ public:
     }
     else return NULL;
   }
+  static SDL_Surface* getSurface(std::string filePath){
+    if(getInstance()->spriteLoaded(filePath)){
+      return getInstance()->_surfaces[filePath];
+    }
+    else return NULL;
+  }
   
   static std::map<std::string, SDL_Texture*> Textures(){
     return getInstance()->_textures;
   }
   
+  static std::map<std::string, SDL_Surface*> Surface(){
+    return getInstance()->_surfaces;
+  }
+  
   static bool spriteLoaded(std::string filePath){
-    return (getInstance()->_textures.count(filePath) != 0);
+    return (getInstance()->_surfaces.count(filePath) != 0);
   }
   
   static void addTexture(std::string filePath, SDL_Texture* texture){
     getInstance()->_textures[filePath] = texture;
+  }
+  
+  static void addSurface(std::string filePath, SDL_Surface* surface){
+    getInstance()->_surfaces[filePath] = surface;
   }
   
   static void removeTexture(std::string filePath){
@@ -57,11 +72,25 @@ public:
     }
   }
   
+  static void removeSurface(std::string filePath){
+    for(auto it = getInstance()->_surfaces.cbegin(); it != getInstance()->_surfaces.cend() ; )
+    {
+      if(it->first == filePath){
+        SDL_FreeSurface(it->second);
+        getInstance()->_surfaces.erase(it++);
+      }
+      else{
+        ++it;
+      }
+    }
+  }
+  
   SpriteLoader(SpriteLoader const&) = delete;
   void operator=(SpriteLoader const&) = delete;
 private:
   SpriteLoader(){}
   std::map<std::string,SDL_Texture*> _textures;
+  std::map<std::string,SDL_Surface*> _surfaces;
 };
 
 class Sprite{
@@ -116,6 +145,7 @@ protected:
 
   SDL_Rect _sourceRect;
   SDL_Texture* _spriteSheet;
+  SDL_Surface* _spriteSheetSurface;
   float _scale = 1;
   
   std::map<std::string, SHEET> _spriteSheets;

@@ -6,7 +6,7 @@
 #include <map>
 
 enum SFX_TYPES{
-  explosion, blood1, blood2, slash, drop, blast, button_prompt, DUST, arrow_blast, splatter, white_splatter, splatter2, CHARGE1, CHARGE2, CHARGED
+  explosion, blood1, blood2, slash, drop, blast, button_prompt, DUST, arrow_blast, splatter, white_splatter, splatter2, CHARGE1, CHARGE2, CHARGED, WINGS
   
 };
 
